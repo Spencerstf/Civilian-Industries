@@ -34,7 +34,7 @@
             exp_to_grant_on_death="-1"
             tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,Engineering"
             description_appender_dll="SKCivilianIndustry"
-            description_appender_type="Arcen.AIW2.SK.GrandStationDescriptionAppender"
+            description_appender_type="SKCivilianIndustry.GrandStationDescriptionAppender"
     >
     </entity>
     <!--    Trade stations.
@@ -66,7 +66,7 @@
             exp_to_grant_on_death="-1"
             tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,MetalGeneration"
             description_appender_dll="SKCivilianIndustry"
-            description_appender_type="Arcen.AIW2.SK.TradeStationDescriptionAppender"
+            description_appender_type="SKCivilianIndustry.TradeStationDescriptionAppender"
     >
     </entity>
     <!--	Trade Posts
@@ -114,7 +114,7 @@
             exp_to_grant_on_death="-1"
             tech_upgrades_that_benefit_me="MetalGeneration,Light"
             description_appender_dll="SKCivilianIndustry"
-            description_appender_type="Arcen.AIW2.SK.CargoShipDescriptionAppender"
+            description_appender_type="SKCivilianIndustry.CargoShipDescriptionAppender"
     >
     </entity>
     <!--    Militia Construction Ship.
@@ -125,7 +125,7 @@
             hull_points="500000" shield_points="100000" speed="BelowAverage1" cannot_be_stacked="true"
             description="A militia ship, it is carrying materials required to construct a defensive building. Upgraded by Engineering and Medium Tech."
             description_appender_dll="SKCivilianIndustry"
-            description_appender_type="Arcen.AIW2.SK.MilitiaShipDescriptionAppender"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
             tech_upgrades_that_benefit_me="Engineering,Medium"
     >
         <system name="FusionBomb" range="Small5" max_mark_level_to_function="0" />
@@ -140,7 +140,7 @@
             strength_multiplier="0.33"
             description="The centerpiece of a Militia Fleet. This has been built in response to ai threat on adjacent planets. Requests resources to build stationary defenses. Upgraded by Citadel and Military Command technology."
             description_appender_dll="SKCivilianIndustry"
-            description_appender_type="Arcen.AIW2.SK.MilitiaShipDescriptionAppender"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
             tech_upgrades_that_benefit_me="Citadels,CommandMilitary">
 
     </entity>
@@ -153,7 +153,7 @@
             strength_multiplier="0.33"
             description="The centerpiece of a Militia Fleet. This has been built in response to ai threat on adjacent planets. Requests resources to build mobile forces. Upgraded by Citadel and Sentries Tech."
             description_appender_dll="SKCivilianIndustry"
-            description_appender_type="Arcen.AIW2.SK.MilitiaShipDescriptionAppender"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
             tech_upgrades_that_benefit_me="Citadels,Sentries">
     </entity>
 	<!--	Advanced Militia Shipyards
@@ -184,7 +184,7 @@
             exp_to_grant_on_death="-1"
             tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,MetalGeneration"
             description_appender_dll="SKCivilianIndustry"
-            description_appender_type="Arcen.AIW2.SK.MilitiaShipDescriptionAppender"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
     >
     </entity>
     <!--    Militia Headquarters
@@ -198,7 +198,7 @@
             special_entity_type="NPCFactionCenterpiece"
             build_sidebar_categories_i_am_part_of="MilitiaBuildings"
             description_appender_dll="SKCivilianIndustry"
-            description_appender_type="Arcen.AIW2.SK.MilitiaShipDescriptionAppender"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
             tech_upgrades_that_benefit_me="Citadels,Forcefields">
         <metal_flow purpose="SelfConstruction" throughput="500"/>
     </entity>
@@ -213,7 +213,7 @@
 			special_entity_type="NPCFactionCenterpiece"
             build_sidebar_categories_i_am_part_of="MilitiaBuildings"
             description_appender_dll="SKCivilianIndustry"
-            description_appender_type="Arcen.AIW2.SK.MilitiaShipDescriptionAppender"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
             tech_upgrades_that_benefit_me="Citadels,Forcefields">
 			<metal_flow purpose="SelfConstruction" throughput="1000"/>
 	</entity>

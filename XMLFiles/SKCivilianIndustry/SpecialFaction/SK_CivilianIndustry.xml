@@ -4,7 +4,7 @@
   <faction name="SKCivilianIndustry"
            display_name="Civilian Industry"
            dll_name="SKCivilianIndustry"
-           type_name="Arcen.AIW2.SK.SpecialFaction_SKCivilianIndustry"
+           type_name="SKCivilianIndustry.SpecialFaction_SKCivilianIndustry"
            team_center_color="Purple" team_border_color="cF8F8FF"
            type="SpecialFaction"
            must_be_at_most_one="true"
