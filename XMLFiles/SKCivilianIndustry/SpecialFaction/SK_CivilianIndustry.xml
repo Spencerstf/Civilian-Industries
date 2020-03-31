@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- The creation of our custom faction. -->
+  <faction name="SKCivilianIndustry"
+           display_name="Civilian Industry"
+           dll_name="SKCivilianIndustry"
+           type_name="Arcen.AIW2.SK.SpecialFaction_SKCivilianIndustry"
+           team_center_color="Purple" team_border_color="cF8F8FF"
+           type="SpecialFaction"
+           must_be_at_most_one="true"
+           description="A player aligned faction consisting of hardworking humans. As you expand to other planets, they will expand along with you to bolster your economy and offer you additional defensive and utility buildings on your colonies."
+  >
+  <custom_field name="Intensity" display_name="Strength" description="Just how effective is this faction?"
+          sort_group="200" setting_type="IntSlider" default="5" min="1" max="10" />		  
+  </faction>
+</root>

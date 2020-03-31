@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>  
+  
+  <!--The purpose of these build categories is to organize things for the player on the sidebar.
+      And by "things," I mean "stuff that you build via direct placement."
+      
+      Those sorts of things include anything that a Battlestation or a Command Station
+      or the Zenith Trader makes available to you at a planet.
+      
+      Other than how things are organized on the sidebar, this has no effect on anything.
+      Repeat: this is purely a visual organization thing on the sidebar 
+      for player ships/structures that are directly built.
+      
+      It has no gameplay, seeding, or other structural significance and doesn't
+      affect how the game plays.-->
+
+  <build_category name="MilitiaBuildings" sort_index="98" display_name="Militia Buildings"
+      description="Buildings that bolster your militia units in one way or another."
+  />
+</root>

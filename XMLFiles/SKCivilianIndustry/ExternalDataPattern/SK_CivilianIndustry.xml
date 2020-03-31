@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+<!--  Define our save data for our PlayerTrains faction.
+      name is equal to the class in your main cs file.
+      type_name is what you've called the storage class in your externaldata cs file.
+-->
+  <item name="CivilianWorld"    dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianWorldExternalData" />
+  <item name="CivilianFaction"  dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianFactionExternalData" /> 
+  <item name="CivilianCargo"    dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianCargoExternalData" /> 
+  <item name="CivilianStatus"   dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianStatusExternalData" />
+  <item name="CivilianMilitia"  dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianMilitiaExternalData" /> 
+  <item name="CivilianPlanet"   dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianPlanetExternalData" /> 
+</root>
