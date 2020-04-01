@@ -241,8 +241,36 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\ExternalData\ExternalData_SKCivilianIndustry.cs" />
-    <Compile Include="src\SpecialFactions\SKCivilianIndustry.cs" />
+    <Compile Include="AttackAssessment.cs" />
+    <Compile Include="CargoShipDescriptionAppender.cs" />
+    <Compile Include="CivilianCargo.cs" />
+    <Compile Include="Persistence\CivilianCargoExtensions.cs" />
+    <Compile Include="Persistence\CivilianCargoExternalData.cs" />
+    <Compile Include="CivilianFaction.cs" />
+    <Compile Include="Persistence\CivilianFactionExtensions.cs" />
+    <Compile Include="Persistence\CivilianFactionExternalData.cs" />
+    <Compile Include="CivilianMilitia.cs" />
+    <Compile Include="Persistence\CivilianMilitiaExtensions.cs" />
+    <Compile Include="Persistence\CivilianMilitiaExternalData.cs" />
+    <Compile Include="CivilianMilitiaStatus.cs" />
+    <Compile Include="CivilianPlanet.cs" />
+    <Compile Include="Persistence\CivilianPlanetExtensions.cs" />
+    <Compile Include="Persistence\CivilianPlanetExternalData.cs" />
+    <Compile Include="CivilianResource.cs" />
+    <Compile Include="CivilianResourceHexColors.cs" />
+    <Compile Include="CivilianShipStatus.cs" />
+    <Compile Include="CivilianStatus.cs" />
+    <Compile Include="Persistence\CivilianStatusExtensions.cs" />
+    <Compile Include="Persistence\CivilianStatusExternalData.cs" />
+    <Compile Include="CivilianTech.cs" />
+    <Compile Include="CivilianWorld.cs" />
+    <Compile Include="Persistence\CivilianWorldExtensions.cs" />
+    <Compile Include="Persistence\CivilianWorldExternalData.cs" />
+    <Compile Include="MilitiaShipDescriptionAppender.cs" />
+    <Compile Include="SpecialFaction_SKCivilianIndustry.cs" />
+    <Compile Include="ThreatReport.cs" />
+    <Compile Include="TradeRequest.cs" />
+    <Compile Include="TradeStationDescriptionAppender.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="XMLFiles\SKCivilianIndustry\Balance_ShotSpeed\CivShotSpeed.xml" />

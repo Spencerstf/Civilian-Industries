@@ -4,10 +4,10 @@
       name is equal to the class in your main cs file.
       type_name is what you've called the storage class in your externaldata cs file.
 -->
-  <item name="CivilianWorld"    dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianWorldExternalData" />
-  <item name="CivilianFaction"  dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianFactionExternalData" /> 
-  <item name="CivilianCargo"    dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianCargoExternalData" /> 
-  <item name="CivilianStatus"   dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianStatusExternalData" />
-  <item name="CivilianMilitia"  dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianMilitiaExternalData" /> 
-  <item name="CivilianPlanet"   dll_name="SKCivilianIndustry" type_name="Arcen.AIW2.SK.CivilianPlanetExternalData" /> 
+  <item name="CivilianWorld"    dll_name="SKCivilianIndustry" type_name="SKCivilianIndustry.Persistence.CivilianWorldExternalData" />
+  <item name="CivilianFaction"  dll_name="SKCivilianIndustry" type_name="SKCivilianIndustry.Persistence.CivilianFactionExternalData" /> 
+  <item name="CivilianCargo"    dll_name="SKCivilianIndustry" type_name="SKCivilianIndustry.Persistence.CivilianCargoExternalData" /> 
+  <item name="CivilianStatus"   dll_name="SKCivilianIndustry" type_name="SKCivilianIndustry.Persistence.CivilianStatusExternalData" />
+  <item name="CivilianMilitia"  dll_name="SKCivilianIndustry" type_name="SKCivilianIndustry.Persistence.CivilianMilitiaExternalData" /> 
+  <item name="CivilianPlanet"   dll_name="SKCivilianIndustry" type_name="SKCivilianIndustry.Persistence.CivilianPlanetExternalData" /> 
 </root>
