@@ -387,6 +387,10 @@ namespace SKCivilianIndustry
             // Load our grand station.
             GameEntity_Squad grandStation = World_AIW2.Instance.GetEntityByID_Squad(factionData.GrandStation);
 
+            // Increment our build counter if needed.
+            if (factionData.FailedCounter.Export > 0)
+                factionData.BuildCounter += factionData.FailedCounter.Import;
+
             // Build a cargo ship if we have enough requests for them.
             if (factionData.CargoShips.Count < 10 || factionData.BuildCounter >= (factionData.GetResourceCost(faction) + (factionData.GetResourceCost(faction) * (factionData.CargoShips.Count / 10.0))))
             {
@@ -400,12 +404,16 @@ namespace SKCivilianIndustry
                 // We'll simply spawn it right on top of our grand station, and it'll dislocate itself.
                 ArcenPoint spawnPoint = grandStation.WorldLocation;
 
-                // Spawn in the ship.
-                GameEntity_Squad entity = GameEntity_Squad.CreateNew(pFaction, entityData, entityData.MarkFor(pFaction), pFaction.FleetUsedAtPlanet, 0, spawnPoint, Context);
+                // For each failed export, spawn a ship.
+                for (int x = 0; x < factionData.FailedCounter.Export; x++)
+                {
+                    // Spawn in the ship.
+                    GameEntity_Squad entity = GameEntity_Squad.CreateNew(pFaction, entityData, entityData.MarkFor(pFaction), pFaction.FleetUsedAtPlanet, 0, spawnPoint, Context);
 
-                // Add the cargo ship to our faction data.
-                factionData.CargoShips.Add(entity.PrimaryKeyID);
-                factionData.CargoShipsIdle.Add(entity.PrimaryKeyID);
+                    // Add the cargo ship to our faction data.
+                    factionData.CargoShips.Add(entity.PrimaryKeyID);
+                    factionData.CargoShipsIdle.Add(entity.PrimaryKeyID);
+                }
 
                 // Reset the build counter.
                 factionData.BuildCounter = 0;
@@ -1649,12 +1657,6 @@ namespace SKCivilianIndustry
         private const int CIV_URGENCY_REDUCTION_PER_REGULAR = 1;
         public void DoTradeRequests(Faction faction, Faction playerFaction, CivilianFaction factionData, ArcenLongTermIntermittentPlanningContext Context)
         {
-            // If no free cargo ships, increment build counter and stop.
-            if (factionData.CargoShipsIdle.Count == 0)
-            {
-                factionData.BuildCounter += (factionData.MilitiaLeaders.Count + factionData.TradeStations.Count);
-                return;
-            }
             Engine_Universal.NewTimingsBeingBuilt.StartRememberingFrame(FramePartTimings.TimingType.ShortTermBackgroundThreadEntry, "DoTradeRequests");
             // Clear our lists.
             factionData.ImportRequests = new List<TradeRequest>();
@@ -1717,14 +1719,6 @@ namespace SKCivilianIndustry
 
             #region Trade Station Imports and Exports
 
-            // If no free cargo ships, increment build counter and stop.
-            if (factionData.CargoShipsIdle.Count == 0)
-            {
-                factionData.BuildCounter += (factionData.TradeStations.Count);
-                Engine_Universal.NewTimingsBeingBuilt.FinishRememberingFrame(FramePartTimings.TimingType.ShortTermBackgroundThreadEntry, "DoTradeRequests");
-                return;
-            }
-
             // Populate our list with trade stations.
             for (int x = 0; x < factionData.TradeStations.Count; x++)
             {
@@ -1768,7 +1762,9 @@ namespace SKCivilianIndustry
                         // Generates urgency based on how close to full capacity we are.
                         if (requesterCargo.Amount[y] > 100)
                         {
-                            int urgency = ((int)Math.Ceiling((1.0 * requesterCargo.Amount[y] / requesterCargo.Capacity[y]) * (requesterCargo.PerSecond[y] * 2))) - incomingForPickup;
+                            // Absolute max export cap is the per second generation times 5.
+                            // This may cause some shortages, but that fits in with the whole trading theme so is a net positive regardless.
+                            int urgency = ((int)Math.Ceiling((1.0 * requesterCargo.Amount[y] / requesterCargo.Capacity[y]) * (requesterCargo.PerSecond[y] * 5))) - incomingForPickup;
 
                             if (urgency > 0)
                                 factionData.ExportRequests.Add(new TradeRequest((CivilianResource)y, urgency, requester, 5));
@@ -1809,7 +1805,6 @@ namespace SKCivilianIndustry
 
             #region Execute Trade
 
-            // Initially limit the number of hops to search through, to try and find closer matches to start with.
             // While we have free ships left, assign our requests away.
             for (int x = 0; x < factionData.ImportRequests.Count && factionData.CargoShipsIdle.Count > 0; x++)
             {
@@ -1851,7 +1846,7 @@ namespace SKCivilianIndustry
                     }
                 }
                 if (foundCargoShip == null)
-                    break;
+                    continue;
                 // If the cargo ship over 75% of the resource already on it, skip the origin station search, and just have it start heading right towards our requesting station.
                 bool hasEnough = false;
                 CivilianCargo foundCargo = foundCargoShip.GetCivilianCargoExt();
@@ -1922,10 +1917,12 @@ namespace SKCivilianIndustry
                 }
             }
 
+            ArcenDebugging.SingleLineQuickDebug($"Imports: {factionData.ImportRequests.Count} Exports: {factionData.ExportRequests.Count}");
             // If we've finished due to not having enough trade ships, request more cargo ships.
             if (factionData.ImportRequests.Count > 0 && factionData.ExportRequests.Count > 0 && factionData.CargoShipsIdle.Count == 0)
-                factionData.BuildCounter += (factionData.ImportRequests.Count + factionData.TradeStations.Count);
-
+                factionData.FailedCounter = (factionData.ImportRequests.Count, factionData.ExportRequests.Count);
+            else
+                factionData.FailedCounter = (0, 0);
             #endregion
 
             Engine_Universal.NewTimingsBeingBuilt.FinishRememberingFrame(FramePartTimings.TimingType.MainSimThreadNormal, "DoTradeRequests");

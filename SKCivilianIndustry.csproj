@@ -266,14 +266,19 @@
     <Compile Include="CivilianWorld.cs" />
     <Compile Include="Persistence\CivilianWorldExtensions.cs" />
     <Compile Include="Persistence\CivilianWorldExternalData.cs" />
-    <Compile Include="GrandStationDescriptionAppender.cs" />
     <Compile Include="MilitiaShipDescriptionAppender.cs" />
     <Compile Include="SpecialFaction_SKCivilianIndustry.cs" />
     <Compile Include="ThreatReport.cs" />
     <Compile Include="TradeRequest.cs" />
     <Compile Include="TradeStationDescriptionAppender.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="XMLFiles\SKCivilianIndustry\Balance_ShotSpeed\CivShotSpeed.xml" />
+    <Content Include="XMLFiles\SKCivilianIndustry\BuildSidebarCategory\SK_CivilianIndustry.xml" />
+    <Content Include="XMLFiles\SKCivilianIndustry\ExternalDataPattern\SK_CivilianIndustry.xml" />
+    <Content Include="XMLFiles\SKCivilianIndustry\GameEntity\SK_CivilianIndustry.xml" />
+    <Content Include="XMLFiles\SKCivilianIndustry\SpecialFaction\SK_CivilianIndustry.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

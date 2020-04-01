@@ -74,6 +74,11 @@ namespace SKCivilianIndustry
         // Counter used to determine when another cargo ship should be built.
         public int BuildCounter;
 
+        /// <summary>
+        /// Last reported number of failed trade routes due to a lack of cargo ships.
+        /// </summary>
+        public (int Import, int Export) FailedCounter;
+
         // Counter used to determine when another militia ship should be built.
         public int MilitiaCounter;
 
@@ -308,7 +313,7 @@ namespace SKCivilianIndustry
         // Saving our data.
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
-            Buffer.AddItem(1);
+            Buffer.AddItem(2);
             Buffer.AddItem(this.GrandStation);
             Buffer.AddItem(this.GrandStationRebuildTimerInSeconds);
             SerializeList(TradeStations, Buffer);
@@ -322,6 +327,8 @@ namespace SKCivilianIndustry
             SerializeList(CargoShipsPathing, Buffer);
             SerializeList(CargoShipsEnroute, Buffer);
             Buffer.AddItem(this.BuildCounter);
+            Buffer.AddItem(this.FailedCounter.Import);
+            Buffer.AddItem(this.FailedCounter.Export);
             Buffer.AddItem(this.MilitiaCounter);
             Buffer.AddItem(this.NextRaidInThisSeconds);
             SerializeList(this.NextRaidWormholes, Buffer);
@@ -371,6 +378,10 @@ namespace SKCivilianIndustry
             this.CargoShipsPathing = DeserializeList(Buffer);
             this.CargoShipsEnroute = DeserializeList(Buffer);
             this.BuildCounter = Buffer.ReadInt32();
+            if (this.Version >= 2)
+                this.FailedCounter = (Buffer.ReadInt32(), Buffer.ReadInt32());
+            else
+                this.FailedCounter = (0, 0);
             this.MilitiaCounter = Buffer.ReadInt32();
             this.NextRaidInThisSeconds = Buffer.ReadInt32();
             this.NextRaidWormholes = DeserializeList(Buffer);
