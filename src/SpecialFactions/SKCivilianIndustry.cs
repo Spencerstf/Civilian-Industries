@@ -211,6 +211,9 @@ namespace Arcen.AIW2.SK
         // Counter used to determine when another cargo ship should be built.
         public int BuildCounter;
 
+        // Last reported number of failed trade routes due to a lack of cargo ships.
+        public (int Import, int Export) FailedCounter;
+
         // Counter used to determine when another militia ship should be built.
         public int MilitiaCounter;
 
@@ -445,7 +448,7 @@ namespace Arcen.AIW2.SK
         // Saving our data.
         public void SerializeTo( ArcenSerializationBuffer Buffer )
         {
-            Buffer.AddItem( 1 );
+            Buffer.AddItem( 2 );
             Buffer.AddItem( this.GrandStation );
             Buffer.AddItem( this.GrandStationRebuildTimerInSeconds );
             SerializeList( TradeStations, Buffer );
@@ -459,6 +462,8 @@ namespace Arcen.AIW2.SK
             SerializeList( CargoShipsPathing, Buffer );
             SerializeList( CargoShipsEnroute, Buffer );
             Buffer.AddItem( this.BuildCounter );
+            Buffer.AddItem( this.FailedCounter.Import );
+            Buffer.AddItem( this.FailedCounter.Export );
             Buffer.AddItem( this.MilitiaCounter );
             Buffer.AddItem( this.NextRaidInThisSeconds );
             SerializeList( this.NextRaidWormholes, Buffer );
@@ -508,6 +513,10 @@ namespace Arcen.AIW2.SK
             this.CargoShipsPathing = DeserializeList( Buffer );
             this.CargoShipsEnroute = DeserializeList( Buffer );
             this.BuildCounter = Buffer.ReadInt32();
+            if ( this.Version >= 2 )
+                this.FailedCounter = (Buffer.ReadInt32(), Buffer.ReadInt32());
+            else
+                this.FailedCounter = (0, 0);
             this.MilitiaCounter = Buffer.ReadInt32();
             this.NextRaidInThisSeconds = Buffer.ReadInt32();
             this.NextRaidWormholes = DeserializeList( Buffer );
@@ -944,47 +953,6 @@ namespace Arcen.AIW2.SK
     }
 
     // Description classes.
-    // Grand Stations
-    // Used to display faction-related info to the player.
-    public class GrandStationDescriptionAppender : IGameEntityDescriptionAppender
-    {
-        public void AddToDescriptionBuffer( GameEntity_Squad RelatedEntityOrNull, GameEntityTypeData RelatedEntityTypeData, ArcenDoubleCharacterBuffer Buffer )
-        {
-            // Make sure we are getting an entity.
-            if ( RelatedEntityOrNull == null )
-                return;
-            // Need to find our faction data to display information.
-            // Look through our world data, first, to find which faction controls our starting station, and load its faction data.
-            CivilianWorld worldData = World.Instance.GetCivilianWorldExt();
-            CivilianFaction factionData = null;
-            // Look through our saved factions to find which one has our starting station
-            for ( int x = 0; x < worldData.Factions.Count; x++ )
-            {
-                var tempData = worldData.getFactionInfo( x );
-                if ( tempData.factionData.GrandStation == RelatedEntityOrNull.PrimaryKeyID )
-                {
-                    factionData = tempData.factionData;
-                }
-            }
-
-            // If we found our faction data, inform them about build requests in the faction
-            if ( factionData != null )
-            {
-                int baseCost = factionData.GetResourceCost( RelatedEntityOrNull.PlanetFaction.Faction );
-                int cargoCost = (int)(baseCost + (baseCost * (factionData.CargoShips.Count / 10.0)));
-                int percForCargo = (int)Math.Min( 100, 100.0 * factionData.BuildCounter / cargoCost );
-                int militiaCost = (int)(baseCost + (baseCost * (factionData.MilitiaLeaders.Count / 10.0)));
-                int percForMilitia = (int)Math.Min( 100, 100.0 * factionData.MilitiaCounter / militiaCost );
-                Buffer.Add( "\n" + percForCargo + "% to next Cargo Ship." );
-                Buffer.Add( "\n" + percForMilitia + "% to next Militia Construction Ship." );
-            }
-
-            // Add in an empty line to stop any other gunk (such as the fleet display) from messing up our given information.
-            Buffer.Add( "\n" );
-            return;
-        }
-    }
-
     // Trade Stations
     // Used to display stored cargo
     public class TradeStationDescriptionAppender : IGameEntityDescriptionAppender
@@ -1536,6 +1504,10 @@ namespace Arcen.AIW2.SK
             // Load our grand station.
             GameEntity_Squad grandStation = World_AIW2.Instance.GetEntityByID_Squad( factionData.GrandStation );
 
+            // Increment our build counter if needed.
+            if ( factionData.FailedCounter.Export > 0 )
+                factionData.BuildCounter += factionData.FailedCounter.Import;
+
             // Build a cargo ship if we have enough requests for them.
             if ( factionData.CargoShips.Count < 10 || factionData.BuildCounter >= (factionData.GetResourceCost( faction ) + (factionData.GetResourceCost( faction ) * (factionData.CargoShips.Count / 10.0))) )
             {
@@ -1549,12 +1521,16 @@ namespace Arcen.AIW2.SK
                 // We'll simply spawn it right on top of our grand station, and it'll dislocate itself.
                 ArcenPoint spawnPoint = grandStation.WorldLocation;
 
-                // Spawn in the ship.
-                GameEntity_Squad entity = GameEntity_Squad.CreateNew( pFaction, entityData, entityData.MarkFor( pFaction ), pFaction.FleetUsedAtPlanet, 0, spawnPoint, Context );
+                // For each failed export, spawn a ship.
+                for ( int x = 0; x < factionData.FailedCounter.Export; x++ )
+                {
+                    // Spawn in the ship.
+                    GameEntity_Squad entity = GameEntity_Squad.CreateNew( pFaction, entityData, entityData.MarkFor( pFaction ), pFaction.FleetUsedAtPlanet, 0, spawnPoint, Context );
 
-                // Add the cargo ship to our faction data.
-                factionData.CargoShips.Add( entity.PrimaryKeyID );
-                factionData.CargoShipsIdle.Add( entity.PrimaryKeyID );
+                    // Add the cargo ship to our faction data.
+                    factionData.CargoShips.Add( entity.PrimaryKeyID );
+                    factionData.CargoShipsIdle.Add( entity.PrimaryKeyID );
+                }
 
                 // Reset the build counter.
                 factionData.BuildCounter = 0;
@@ -2798,12 +2774,6 @@ namespace Arcen.AIW2.SK
         private const int CIV_URGENCY_REDUCTION_PER_REGULAR = 1;
         public void DoTradeRequests( Faction faction, Faction playerFaction, CivilianFaction factionData, ArcenLongTermIntermittentPlanningContext Context )
         {
-            // If no free cargo ships, increment build counter and stop.
-            if ( factionData.CargoShipsIdle.Count == 0 )
-            {
-                factionData.BuildCounter += (factionData.MilitiaLeaders.Count + factionData.TradeStations.Count);
-                return;
-            }
             Engine_Universal.NewTimingsBeingBuilt.StartRememberingFrame( FramePartTimings.TimingType.ShortTermBackgroundThreadEntry, "DoTradeRequests" );
             // Clear our lists.
             factionData.ImportRequests = new List<TradeRequest>();
@@ -2848,9 +2818,7 @@ namespace Arcen.AIW2.SK
                     if ( cargoShip.GetCivilianStatusExt().Status == CivilianShipStatus.Idle )
                         continue;
                     if ( cargoShip.GetCivilianStatusExt().Destination == militia.PrimaryKeyID )
-                    {
                         cargoEnroute++;
-                    }
                 }
 
                 int urgency = BASE_MIL_URGENCY;
@@ -2865,14 +2833,6 @@ namespace Arcen.AIW2.SK
             #endregion
 
             #region Trade Station Imports and Exports
-
-            // If no free cargo ships, increment build counter and stop.
-            if ( factionData.CargoShipsIdle.Count == 0 )
-            {
-                factionData.BuildCounter += (factionData.TradeStations.Count);
-                Engine_Universal.NewTimingsBeingBuilt.FinishRememberingFrame( FramePartTimings.TimingType.ShortTermBackgroundThreadEntry, "DoTradeRequests" );
-                return;
-            }
 
             // Populate our list with trade stations.
             for ( int x = 0; x < factionData.TradeStations.Count; x++ )
@@ -2917,7 +2877,9 @@ namespace Arcen.AIW2.SK
                         // Generates urgency based on how close to full capacity we are.
                         if ( requesterCargo.Amount[y] > 100 )
                         {
-                            int urgency = ((int)Math.Ceiling( (1.0 * requesterCargo.Amount[y] / requesterCargo.Capacity[y]) * (requesterCargo.PerSecond[y] * 2) )) - incomingForPickup;
+                            // Absolute max export cap is the per second generation times 5.
+                            // This may cause some shortages, but that fits in with the whole trading theme so is a net positive regardless.
+                            int urgency = ((int)Math.Ceiling( (1.0 * requesterCargo.Amount[y] / requesterCargo.Capacity[y]) * (requesterCargo.PerSecond[y] * 5) )) - incomingForPickup;
 
                             if ( urgency > 0 )
                                 factionData.ExportRequests.Add( new TradeRequest( (CivilianResource)y, urgency, requester, 5 ) );
@@ -2958,7 +2920,6 @@ namespace Arcen.AIW2.SK
 
             #region Execute Trade
 
-            // Initially limit the number of hops to search through, to try and find closer matches to start with.
             // While we have free ships left, assign our requests away.
             for ( int x = 0; x < factionData.ImportRequests.Count && factionData.CargoShipsIdle.Count > 0; x++ )
             {
@@ -3000,7 +2961,7 @@ namespace Arcen.AIW2.SK
                     }
                 }
                 if ( foundCargoShip == null )
-                    break;
+                    continue;
                 // If the cargo ship over 75% of the resource already on it, skip the origin station search, and just have it start heading right towards our requesting station.
                 bool hasEnough = false;
                 CivilianCargo foundCargo = foundCargoShip.GetCivilianCargoExt();
@@ -3071,9 +3032,13 @@ namespace Arcen.AIW2.SK
                 }
             }
 
+            ArcenDebugging.SingleLineQuickDebug( "Imports: " + factionData.ImportRequests.Count + " Exports: " + factionData.ExportRequests.Count );
+
             // If we've finished due to not having enough trade ships, request more cargo ships.
             if ( factionData.ImportRequests.Count > 0 && factionData.ExportRequests.Count > 0 && factionData.CargoShipsIdle.Count == 0 )
-                factionData.BuildCounter += (factionData.ImportRequests.Count + factionData.TradeStations.Count);
+                factionData.FailedCounter = (factionData.ImportRequests.Count, factionData.ExportRequests.Count);
+            else
+                factionData.FailedCounter = (0, 0);
 
             #endregion
 

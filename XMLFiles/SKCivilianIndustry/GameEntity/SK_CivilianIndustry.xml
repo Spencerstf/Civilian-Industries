@@ -33,8 +33,6 @@
             priority_to_protect="MajorPlanetLevelObjective"
             exp_to_grant_on_death="-1"
             tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,Engineering"
-            description_appender_dll="SKCivilianIndustry"
-            description_appender_type="Arcen.AIW2.SK.GrandStationDescriptionAppender"
     >
     </entity>
     <!--    Trade stations.
@@ -78,7 +76,7 @@
                 special_entity_type="NPCFactionCenterpiece"
                 description="A military funded trade post. Upgraded by Economic and Logistic Command and Metal Generation Tech."
                 hull_points="250000" shield_points="500000"
-                metal_cost="500000" energy_consumption="100000"
+                metal_cost="500000" energy_consumption="50000"
                 visuals_scale_multiplier="5" size_scale="5"
                 tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,MetalGeneration"
     >
@@ -262,12 +260,12 @@
 				multiplier_to_all_scales="4"
     >
         <system name="FusionBolt" display_name="Crackerjack Bolt"
-                        category="Weapon" firing_timing="OnlyInRange"
-                        damage_per_shot="5000" range="Normal3" shot_speed="Fast" rate_of_fire="Low" fires_salvos_sequentially="true"
+                        category="Weapon" firing_timing="OnlyInRange" shots_per_salvo="3"
+                        damage_per_shot="5000" range="Normal3" shot_speed="Fast" rate_of_fire="High" fires_salvos_sequentially="true"
                         shot_type_data="FusionBolt"
                         base_percent_damage_bypasses_personal_shields="0.9"
         >
-            <outgoing_damage_modifier based_on="TargetTimeAtPlanet" comparison_type="LessThan" compared_to="60" multiplier="5" />
+          <outgoing_damage_modifier based_on="TargetTimeAtPlanet" comparison_type="LessThan" compared_to="60" multiplier="5" />
         </system>
     </entity>
     
@@ -304,8 +302,8 @@
                         category="Weapon" firing_timing="OnlyInRange"
                         damage_per_shot="24000" range="AboveAverage3" shot_speed="Slow" rate_of_fire="Misery" fires_salvos_sequentially="true"
                         shot_type_data="PlasmaTorpedoAOEBurstAtEnd"
-                        area_of_effect_size="1500"
-                        base_knockback_per_shot="3000" added_knockback_per_shot_per_mark="500" knockback_to_ships_mass_tx_less_than="5"
+                        area_of_effect_size="2000"
+                        base_knockback_per_shot="5000" added_knockback_per_shot_per_mark="500" knockback_to_ships_mass_tx_less_than="5"
                         aoe_spreads_damage_among_available_targets="true"
         >
         </system>
@@ -336,7 +334,7 @@
                 tags="CivDisruptiveProtector,CivProtector"
 				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
                 description="A potent Protector, built using advanced Disruptive technology. This ship is the ultimate in protecting its allies with powerful debuffs, a potent forcefield, and self healing."
-                hull_points="500000" shield_points="1000000" shield_size_scale="10"
+                hull_points="500000" shield_points="1000000" shield_size_scale="6" my_forcefield_does_not_shrink="true"
                 health_change_per_damage_dealt="5"
                 tech_upgrades_that_benefit_me="Disruptive,Heavy"
 				multiplier_to_all_scales="2"
@@ -379,7 +377,7 @@
     >
         <system name="FusionBomb" display_name="Brick Bomb"
                 category="Weapon" firing_timing="OnlyInRange"
-                damage_per_shot="700" range="VeryTiny1" shot_speed="Normal" rate_of_fire="High" fires_salvos_sequentially="true"
+                damage_per_shot="1000" range="VeryTiny1" shot_speed="Normal" rate_of_fire="Devourer" fires_salvos_sequentially="true"
                 shot_type_data="FusionBomb"	
                 base_percent_damage_bypasses_personal_shields="0"
         >
@@ -420,14 +418,14 @@
     >
 	<system name="TritiumRailcannon" display_name="Hurricane Railcannon"
 				category="Weapon" firing_timing="OnlyInRange"
-				damage_per_shot="300" range="EssentiallyInfinite" shot_speed="VeryFast" rate_of_fire="Misery"
+				damage_per_shot="800" range="EssentiallyInfinite" shot_speed="VeryFast" rate_of_fire="Misery"
 				shots_per_salvo="8" fires_salvos_sequentially="false"
 				shot_type_data="ExtremeLongRangeRailgun"				
 				>
     </system>
 	<system name="GraviticCore" display_name="Storm Core"
 				category="Passive"
-				base_gravity_speed_multiplier="0.75" subtracted_gravity_speed_multiplier_per_mark="0.05" gravity_hits_engine_gx_less_than="14" gravity_range="ExtremelyHigh"
+				base_gravity_speed_multiplier="0.81" subtracted_gravity_speed_multiplier_per_mark="0.01" gravity_hits_engine_gx_less_than="14" gravity_range="ExtremelyHigh"
 				>
     </system>
     </entity>
@@ -457,7 +455,7 @@
     >
 	<system name="Melee" display_name="Ranged Blade"
 				category="Weapon" firing_timing="OnlyInRange"
-				damage_per_shot="335" shots_per_salvo="30" range="Tiny1" shot_speed="Fast" rate_of_fire="SlightlyLow" fires_salvos_sequentially="false"
+				damage_per_shot="1500" shots_per_salvo="50" range="Tiny1" shot_speed="Fast" rate_of_fire="SlightlyLow" fires_salvos_sequentially="false"
 				shot_type_data="MeleeInvisible" added_target_evaluator="Melee"
 				>
     </system>
@@ -496,7 +494,7 @@
     >
 	<system name="FusionBolt" display_name="Reaper Bolt"
 				category="Weapon" firing_timing="OnlyInRange"
-				damage_per_shot="100" range="Normal3" shots_per_salvo="5" shot_speed="Fast" rate_of_fire="Devourer" fires_salvos_sequentially="false"
+				damage_per_shot="500" range="Normal3" shots_per_salvo="5" shot_speed="Fast" rate_of_fire="Devourer" fires_salvos_sequentially="false"
 				shot_type_data="FusionBolt"
 				base_percent_damage_bypasses_personal_shields="0.9"
 				>
@@ -533,12 +531,12 @@
                 description="A potent Protector, built using advanced Splash technology. This ship fires off multiple types of slow moving grenades at hostile forces."
                 hull_points="1000000" shield_points="500000"
                 tech_upgrades_that_benefit_me="Splash,Light"
-				is_strikecraft="false" multiplier_to_all_scales="7" multiplier_to_all_costs="100"
+				is_strikecraft="false" multiplier_to_all_scales="6" multiplier_to_all_costs="100"
     >
 	<system name="Grenade" display_name="Flak Grenade"
 				category="Weapon" firing_timing="OnlyInRange"
-				damage_per_shot="60" range="EssentiallyInfinite" shot_speed="Grenade" rate_of_fire="ExtremelyLow" fires_salvos_sequentially="true"
-				shot_type_data="FlakShotAOEBurstAtEnd" shots_per_salvo="5"
+				damage_per_shot="800" range="EssentiallyInfinite" shot_speed="Grenade" rate_of_fire="ExtremelyLow" fires_salvos_sequentially="true"
+				shot_type_data="FlakShotAOEBurstAtEnd" shots_per_salvo="8"
 				area_of_effect_size="3200"
 				stack_damage_multiplier="2"
 				maximum_number_of_targets_hit_per_shot="9"
@@ -547,8 +545,8 @@
     </system>
 	<system name="Grenade2" display_name="Lightning Grenade"
 				category="Weapon" firing_timing="OnlyInRange"
-				damage_per_shot="60" range="EssentiallyInfinite" shot_speed="Grenade" rate_of_fire="ExtremelyLow" fires_salvos_sequentially="true"
-				shot_type_data="LightningExplosionAOEShot" shots_per_salvo="5"
+				damage_per_shot="800" range="EssentiallyInfinite" shot_speed="Grenade" rate_of_fire="ExtremelyLow" fires_salvos_sequentially="true"
+				shot_type_data="LightningExplosionAOEShot" shots_per_salvo="8"
 				added_target_evaluator="WeaponJamAsPrimary"
 				area_of_effect_size="3200"				
 				maximum_number_of_targets_hit_per_shot="9"
@@ -592,7 +590,7 @@
     >
 	<system name="Railcannon" display_name="Vine Piercer"
 				category="Weapon" firing_timing="OnlyInRange"
-				damage_per_shot="300" range="Normal4" shot_speed="VeryFast" rate_of_fire="Misery"
+				damage_per_shot="800" range="Normal4" shot_speed="VeryFast" rate_of_fire="Misery"
 				shots_per_salvo="16" added_shots_per_salvo_per_mark="6" fires_salvos_sequentially="false"				
 				shot_type_data="ParalysisProngedShot_Blue"				
 				>
@@ -630,8 +628,8 @@
                 tech_upgrades_that_benefit_me="Technologist,Medium"
 				fleet_design_template_i_use_for_drones="DecoyDrones"
 				drone_starting_behavior_type="Attacker_Full"	
-				allied_speed_multiplier="2"
-				allied_speed_multiplier_added_per_mark="0.25"
+				allied_speed_multiplier="1.2"
+				allied_speed_multiplier_added_per_mark="0.05"
 				multiplier_to_all_scales="3"
     >
 	<system name="TachyonArray" display_name="Orchestration Array"
