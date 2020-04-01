@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SKCivilianIndustry
+namespace SKCivilianIndustry.Persistence
 {
     /// <summary>
     /// The following is a helper function , designed to allow us to save and load data on demand.

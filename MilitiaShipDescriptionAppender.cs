@@ -1,5 +1,6 @@
 ﻿using Arcen.AIW2.Core;
 using Arcen.Universal;
+using SKCivilianIndustry.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;

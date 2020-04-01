@@ -244,28 +244,28 @@
     <Compile Include="AttackAssessment.cs" />
     <Compile Include="CargoShipDescriptionAppender.cs" />
     <Compile Include="CivilianCargo.cs" />
-    <Compile Include="CivilianCargoExtensions.cs" />
-    <Compile Include="CivilianCargoExternalData.cs" />
+    <Compile Include="Persistence\CivilianCargoExtensions.cs" />
+    <Compile Include="Persistence\CivilianCargoExternalData.cs" />
     <Compile Include="CivilianFaction.cs" />
-    <Compile Include="CivilianFactionExtensions.cs" />
-    <Compile Include="CivilianFactionExternalData.cs" />
+    <Compile Include="Persistence\CivilianFactionExtensions.cs" />
+    <Compile Include="Persistence\CivilianFactionExternalData.cs" />
     <Compile Include="CivilianMilitia.cs" />
-    <Compile Include="CivilianMilitiaExtensions.cs" />
-    <Compile Include="CivilianMilitiaExternalData.cs" />
+    <Compile Include="Persistence\CivilianMilitiaExtensions.cs" />
+    <Compile Include="Persistence\CivilianMilitiaExternalData.cs" />
     <Compile Include="CivilianMilitiaStatus.cs" />
     <Compile Include="CivilianPlanet.cs" />
-    <Compile Include="CivilianPlanetExtensions.cs" />
-    <Compile Include="CivilianPlanetExternalData.cs" />
+    <Compile Include="Persistence\CivilianPlanetExtensions.cs" />
+    <Compile Include="Persistence\CivilianPlanetExternalData.cs" />
     <Compile Include="CivilianResource.cs" />
     <Compile Include="CivilianResourceHexColors.cs" />
     <Compile Include="CivilianShipStatus.cs" />
     <Compile Include="CivilianStatus.cs" />
-    <Compile Include="CivilianStatusExtensions.cs" />
-    <Compile Include="CivilianStatusExternalData.cs" />
+    <Compile Include="Persistence\CivilianStatusExtensions.cs" />
+    <Compile Include="Persistence\CivilianStatusExternalData.cs" />
     <Compile Include="CivilianTech.cs" />
     <Compile Include="CivilianWorld.cs" />
-    <Compile Include="CivilianWorldExtensions.cs" />
-    <Compile Include="CivilianWorldExternalData.cs" />
+    <Compile Include="Persistence\CivilianWorldExtensions.cs" />
+    <Compile Include="Persistence\CivilianWorldExternalData.cs" />
     <Compile Include="GrandStationDescriptionAppender.cs" />
     <Compile Include="MilitiaShipDescriptionAppender.cs" />
     <Compile Include="SpecialFaction_SKCivilianIndustry.cs" />
@@ -273,6 +273,7 @@
     <Compile Include="TradeRequest.cs" />
     <Compile Include="TradeStationDescriptionAppender.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
