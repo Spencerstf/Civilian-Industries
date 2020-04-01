@@ -241,8 +241,37 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="src\ExternalData\ExternalData_SKCivilianIndustry.cs" />
-    <Compile Include="src\SpecialFactions\SKCivilianIndustry.cs" />
+    <Compile Include="AttackAssessment.cs" />
+    <Compile Include="CargoShipDescriptionAppender.cs" />
+    <Compile Include="CivilianCargo.cs" />
+    <Compile Include="CivilianCargoExtensions.cs" />
+    <Compile Include="CivilianCargoExternalData.cs" />
+    <Compile Include="CivilianFaction.cs" />
+    <Compile Include="CivilianFactionExtensions.cs" />
+    <Compile Include="CivilianFactionExternalData.cs" />
+    <Compile Include="CivilianMilitia.cs" />
+    <Compile Include="CivilianMilitiaExtensions.cs" />
+    <Compile Include="CivilianMilitiaExternalData.cs" />
+    <Compile Include="CivilianMilitiaStatus.cs" />
+    <Compile Include="CivilianPlanet.cs" />
+    <Compile Include="CivilianPlanetExtensions.cs" />
+    <Compile Include="CivilianPlanetExternalData.cs" />
+    <Compile Include="CivilianResource.cs" />
+    <Compile Include="CivilianResourceHexColors.cs" />
+    <Compile Include="CivilianShipStatus.cs" />
+    <Compile Include="CivilianStatus.cs" />
+    <Compile Include="CivilianStatusExtensions.cs" />
+    <Compile Include="CivilianStatusExternalData.cs" />
+    <Compile Include="CivilianTech.cs" />
+    <Compile Include="CivilianWorld.cs" />
+    <Compile Include="CivilianWorldExtensions.cs" />
+    <Compile Include="CivilianWorldExternalData.cs" />
+    <Compile Include="GrandStationDescriptionAppender.cs" />
+    <Compile Include="MilitiaShipDescriptionAppender.cs" />
+    <Compile Include="SpecialFaction_SKCivilianIndustry.cs" />
+    <Compile Include="ThreatReport.cs" />
+    <Compile Include="TradeRequest.cs" />
+    <Compile Include="TradeStationDescriptionAppender.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
