@@ -2070,7 +2070,10 @@ namespace SKCivilianIndustry
             }
         }
 
-        // Handle movement of militia construction ships.
+        /// <summary>
+        /// Handle movement of militia construction ships.
+
+        /// </summary>
         public void DoMilitiaConstructionShipMovement(Faction faction, Faction playerFaction, CivilianFaction factionData, ArcenLongTermIntermittentPlanningContext Context)
         {
             // Loop through each of our militia ships.

@@ -41,7 +41,7 @@ namespace SKCivilianIndustry
         /// <summary>
         /// Finished being processed.
         /// </summary>
-        public bool Processed { get; }
+        public bool Processed { get; set; }
 
         public TradeRequest(CivilianResource request, List<CivilianResource> declined, int urgency, GameEntity_Squad station, int maxSearchHops)
         {
