@@ -12,14 +12,19 @@ namespace SKCivilianIndustry
     /// </summary>
     public class CivilianCargo
     {
-        // Version of this class.
+        /// <summary>
+        /// Version of this class.
+        /// </summary>
         public int Version;
 
         // We have three arrays here.
         // One for current amount, one for capacity, and one for per second change.
-        public int[] Amount;
-        public int[] Capacity;
-        public int[] PerSecond; // Positive is generation, negative is drain.
+        public int[] Amount { get; } = new int[(int)CivilianResource.Length];
+        public int[] Capacity { get; } = new int[(int)CivilianResource.Length];
+        /// <remarks>
+        /// Positive is generation, negative is drain.
+        /// </remarks>
+        public int[] PerSecond { get; } = new int[(int)CivilianResource.Length];
 
         // Following three functions are used for initializing, saving, and loading data.
         // Initialization function.
@@ -27,9 +32,6 @@ namespace SKCivilianIndustry
         public CivilianCargo()
         {
             // Values are set to the default for ships. Stations will manually initialize theirs.
-            this.Amount = new int[(int)CivilianResource.Length];
-            this.Capacity = new int[(int)CivilianResource.Length];
-            this.PerSecond = new int[(int)CivilianResource.Length];
             for (int x = 0; x < this.Amount.Length; x++)
             {
                 this.Amount[x] = 0;
@@ -37,7 +39,11 @@ namespace SKCivilianIndustry
                 this.PerSecond[x] = 0;
             }
         }
-        // Saving our data.
+
+        /// <summary>
+        /// Used to save our data.
+        /// </summary>
+        /// <param name="Buffer"></param>
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
             Buffer.AddItem(1);
@@ -54,7 +60,13 @@ namespace SKCivilianIndustry
                 Buffer.AddItem(this.PerSecond[x]);
             }
         }
-        // Loading our data. Make sure the loading order is the same as the saving order.
+
+        /// <summary>
+        /// Used to load our data from the buffer.
+        /// </summary>
+        /// <remarks>
+        /// Make sure that laoding order is the same as the saving order.</remarks>
+        /// <param name="Buffer"></param>
         public CivilianCargo(ArcenDeserializationBuffer Buffer)
         {
             this.Version = Buffer.ReadInt32();
@@ -64,11 +76,8 @@ namespace SKCivilianIndustry
             // Can't add values to an array that doesn't exist, after all.
             // Its more important to be accurate than it is to be update safe here, so we'll always use our stored value to figure out the number of resources.
             int savedCount = Buffer.ReadInt32();
-            int realCount = (int)CivilianResource.Length;
-            this.Amount = new int[realCount];
-            this.Capacity = new int[realCount];
-            this.PerSecond = new int[realCount];
-            for (int x = 0; x < realCount; x++)
+            int resourceTypeCount = (int)CivilianResource.Length;
+            for (int x = 0; x < resourceTypeCount; x++)
             {
                 if (x >= savedCount)
                 {

@@ -12,21 +12,29 @@ namespace SKCivilianIndustry
     /// </summary>
     public class CivilianStatus
     {
-        public int Version;
+        public int Version { get; private set; }
 
-        // The ship's current status.
-        public CivilianShipStatus Status;
+        /// <summary>
+        /// Current status of the ship.
+        /// </summary>
+        public CivilianShipStatus Status { get; set; } = CivilianShipStatus.Idle;
 
-        // The index of the requesting station.
-        // If -1, its being sent from the grand station.
-        public int Origin;
+        /// <summary>
+        /// The index of requesting station.
+        /// If - 1 the it is being sent from the grand station.
+        /// </summary>
+        public int Origin { get; set; } = -1;
 
-        // The index of the ship's destination station, if any.
-        public int Destination;
+        /// <summary>
+        /// The index of the ship's destination station, if any.
+        /// </summary>
+        public int Destination { get; set; } = -1;
 
-        // The amount of time left before departing from a loading job.
-        // Usually 2 minutes.
-        public int LoadTimer;
+        /// <summary>
+        /// The amount of time left before departing from a loading job.
+        /// Usually 120 seconds. Value here is interpreted as seconds.
+        /// </summary>
+        public int LoadTimer { get; set; } = 0;
 
         // Following three functions are used for initializing, saving, and loading data.
         // Initialization function.
@@ -34,11 +42,12 @@ namespace SKCivilianIndustry
         public CivilianStatus()
         {
             this.Status = CivilianShipStatus.Idle;
-            this.Origin = -1;
-            this.Destination = -1;
-            this.LoadTimer = 0;
         }
-        // Saving our data.
+
+        /// <summary>
+        /// Used to save data to the buffer.
+        /// </summary>
+        /// <param name="Buffer"></param>
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
             Buffer.AddItem(1);
@@ -47,7 +56,9 @@ namespace SKCivilianIndustry
             Buffer.AddItem(this.Destination);
             Buffer.AddItem(this.LoadTimer);
         }
-        // Loading our data. Make sure the loading order is the same as the saving order.
+        /// <summary>
+        /// Loading our data. Make sure the loading order is the same as the saving order.
+        /// </summary>
         public CivilianStatus(ArcenDeserializationBuffer Buffer)
         {
             this.Version = Buffer.ReadInt32();

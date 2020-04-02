@@ -14,10 +14,14 @@ namespace SKCivilianIndustry
     /// </summary>
     public class CivilianWorld
     {
-        // Version of this class.
+        /// <summary>
+        /// Version of this class.
+        /// </summary>
         public int Version;
 
-        // Faction indexes with an active civilian industry.
+        /// <summary>
+        /// Faction indexes with an active civilian industry.
+        /// </summary>
         public List<int> Factions = new List<int>();
 
         /// <summary>
@@ -27,6 +31,14 @@ namespace SKCivilianIndustry
 
         // Helper function(s).
         // Get the faction that the sent index is for.
+        /// <summary>
+        /// Get the faction that the sent index is for.
+        /// </summary>
+        /// <remarks>
+        /// Helper function
+        /// </remarks>
+        /// <param name="index">Id of the faction</param>
+        /// <returns>Faction for which the index was for.</returns>
         public (bool valid, Faction faction, CivilianFaction factionData) getFactionInfo(int index)
         {
             Faction faction = World_AIW2.Instance.GetFactionByIndex(this.Factions[index]);
@@ -47,7 +59,9 @@ namespace SKCivilianIndustry
         // Following two functions are used for saving, and loading data.
         public CivilianWorld() { }
 
-        // Saving our data.
+        /// <summary>
+        /// Used to save data to buffer.
+        /// </summary>
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
             Buffer.AddItem(1);
@@ -60,7 +74,14 @@ namespace SKCivilianIndustry
                 Buffer.AddItem(this.Factions[x]);
             Buffer.AddItem(GeneratedResources);
         }
-        // Loading our data. Make sure the loading order is the same as the saving order.
+
+        /// <summary>
+        /// Used to load our data.
+        /// </summary>
+        /// <remarks>
+        /// Make sure that loading order is the same as the saving order.
+        /// </remarks>
+        /// <param name="Buffer"></param>
         public CivilianWorld(ArcenDeserializationBuffer Buffer)
         {
             Version = Buffer.ReadInt32();
