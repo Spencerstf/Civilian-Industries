@@ -60,39 +60,40 @@ namespace SKCivilianIndustry
                 for (int x = 0; x < (int)CivilianResource.Length; x++)
                 {
                     GameEntityTypeData entityData = GameEntityTypeDataTable.Instance.GetRowByName(militiaData.ShipTypeData[x], false, null);
-                    if (entityData != null)
+
+                    if (entityData == null)
+                        continue;
+
+                    int count = militiaData.GetShipCount(entityData.InternalName);
+                    Buffer.Add($"\n{entityData.DisplayName}:");
+                    Buffer.StartColor(UnityEngine.Color.green);
+                    Buffer.Add($" {count}/{militiaData.ShipCapacity[x]}");
+                    Buffer.EndColor();
+                    Buffer.StartColor(CivilianResourceHexColors.Color[x]);
+                    Buffer.Add($" ({(CivilianResource)x})");
+                    Buffer.EndColor();
+
+                    int cost;
+                    if (RelatedEntityOrNull.TypeData.GetHasTag("BuildsProtectors"))
+                        cost = (int)(12000 * SpecialFaction_SKCivilianIndustry.CostIntensityModifier(RelatedEntityOrNull.PlanetFaction.Faction));
+                    else
                     {
-                        int count = militiaData.GetShipCount(entityData.InternalName);
-                        Buffer.Add("\n" + entityData.DisplayName + ":");
-                        Buffer.StartColor(UnityEngine.Color.green);
-                        Buffer.Add(" " + count + "/" + militiaData.ShipCapacity[x]);
-                        Buffer.EndColor();
-                        Buffer.StartColor(CivilianResourceHexColors.Color[x]);
-                        Buffer.Add(" (" + (CivilianResource)x + ")");
-                        Buffer.EndColor();
-
-                        int cost = 0;
-                        if (RelatedEntityOrNull.TypeData.GetHasTag("BuildsProtectors"))
-                            cost = (int)(12000 * SpecialFaction_SKCivilianIndustry.CostIntensityModifier(RelatedEntityOrNull.PlanetFaction.Faction));
-                        else
-                        {
-                            double countCostModifier = 1.0 + (1.0 - ((militiaData.ShipCapacity[x] - count + 1.0) / militiaData.ShipCapacity[x]));
-                            int baseCost = entityData.CostForAIToPurchase;
-                            cost = (int)(SpecialFaction_SKCivilianIndustry.CostIntensityModifier(RelatedEntityOrNull.PlanetFaction.Faction) * (baseCost * countCostModifier * (militiaData.CostMultiplier / 100.0)));
-                        }
-
-                        if (count < militiaData.ShipCapacity[x])
-                        {
-                            double perc = Math.Min(100, 100.0 * (1.0 * cargoData.Amount[x] / cost));
-                            Buffer.Add(" " + perc.ToString("0.##") + "% (Building)");
-                        }
-                        else
-                        {
-                            double perc = Math.Min(100, 100.0 * (1.0 * cargoData.Amount[x] / cargoData.Capacity[x]));
-                            Buffer.Add(" " + perc.ToString("0.##") + "% (Stockpiling)");
-                        }
-                        Buffer.EndColor();
+                        double countCostModifier = 1.0 + (1.0 - ((militiaData.ShipCapacity[x] - count + 1.0) / militiaData.ShipCapacity[x]));
+                        int baseCost = entityData.CostForAIToPurchase;
+                        cost = (int)(SpecialFaction_SKCivilianIndustry.CostIntensityModifier(RelatedEntityOrNull.PlanetFaction.Faction) * (baseCost * countCostModifier * (militiaData.CostMultiplier / 100.0)));
                     }
+
+                    if (count < militiaData.ShipCapacity[x])
+                    {
+                        double perc = Math.Min(100, 100.0 * (1.0 * cargoData.Amount[x] / cost));
+                        Buffer.Add($" {perc.ToString("0.##")}% (Building)");
+                    }
+                    else
+                    {
+                        double perc = Math.Min(100, 100.0 * (1.0 * cargoData.Amount[x] / cargoData.Capacity[x]));
+                        Buffer.Add($" {perc.ToString("0.##")}% (Stockpiling)");
+                    }
+                    Buffer.EndColor();
                 }
             }
 

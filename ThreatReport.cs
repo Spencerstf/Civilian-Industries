@@ -12,14 +12,14 @@ namespace SKCivilianIndustry
     /// </summary>
     public class ThreatReport : IComparable<ThreatReport>
     {
-        public Planet Planet;
-        public int MilitiaGuardStrength;
-        public int MilitiaMobileStrength;
-        public int FriendlyGuardStrength;
-        public int FriendlyMobileStrength;
-        public int CloakedHostileStrength;
-        public int NonCloakedHostileStrength;
-        public int WaveStrength;
+        public Planet Planet { get; }
+        public int MilitiaGuardStrength { get; }
+        public int MilitiaMobileStrength { get; }
+        public int FriendlyGuardStrength { get; }
+        public int FriendlyMobileStrength { get; }
+        public int CloakedHostileStrength { get; }
+        public int NonCloakedHostileStrength { get; }
+        public int WaveStrength { get; }
         public int TotalStrength => CloakedHostileStrength + NonCloakedHostileStrength;
         public (int MilitiaGuard, int MilitiaMobile, int FriendlyGuard, int FriendlyMobile, int CloakedHostileStrength, int NonCloakedHostileStrength, int WaveStrength, int TotalStrength) GetThreat()
         {
@@ -45,9 +45,17 @@ namespace SKCivilianIndustry
 
         public override string ToString()
         {
-            return "Planet: " + Planet + " MilitiaGuard: " + MilitiaGuardStrength + " MilitiaMobile: " + MilitiaMobileStrength + " FriendlyGuard: " + FriendlyGuardStrength +
-                " FriendlyMobile: " + FriendlyMobileStrength + " CloakedHostile: " + CloakedHostileStrength + " NonCloakedHostile: " + NonCloakedHostileStrength +
-                " Wave: " + WaveStrength + " Total: " + TotalStrength;
+            StringBuilder b = new StringBuilder();
+            b.Append($"Planet: {Planet} ");
+            b.Append($"MilitiaGuard: {MilitiaGuardStrength} ");
+            b.Append($"MilitiaMobile: {MilitiaMobileStrength} ");
+            b.Append($"FriendlyGuard: {FriendlyGuardStrength} ");
+            b.Append($"FriendlyMobile: {FriendlyMobileStrength} ");
+            b.Append($"CloakedHostile: {CloakedHostileStrength} ");
+            b.Append($"NonCloakedHostile: {NonCloakedHostileStrength} ");
+            b.Append($"Wave: {WaveStrength} ");
+            b.Append($"Total: {TotalStrength}.");
+            return b.ToString();
         }
     }
 }

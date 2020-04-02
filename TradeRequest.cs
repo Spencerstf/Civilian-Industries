@@ -12,23 +12,36 @@ namespace SKCivilianIndustry
     /// </summary>
     public class TradeRequest : IComparable<TradeRequest>
     {
-        // The resource to be requested. If length, means any.
+        /// <summary>
+        /// The resource to be requested. If length, means any.
+        /// </summary>
         public CivilianResource Requested;
 
-        // Resources to be declined, if above is length.
+        // TODO : It's hard to understand what 'if above is length' means.
+        /// <summary>
+        /// Resources to be declined, if above is length.
+        /// </summary>
         public List<CivilianResource> Declined;
 
-        // The urgency of the request.
-        public int Urgency;
+        /// <summary>
+        /// Urgency of the request.
+        /// </summary>
+        public int Urgency { get; }
 
-        // The station with this request.
-        public GameEntity_Squad Station;
+        /// <summary>
+        /// The station with this request.
+        /// </summary>
+        public GameEntity_Squad Station { get; }
 
-        // Maximum number of hops to look for trade in.
-        public int MaxSearchHops;
+        /// <summary>
+        /// Maximum number of hops to look for trade in.
+        /// </summary>
+        public int MaxSearchHops { get; }
 
-        // Finished being processed.
-        public bool Processed;
+        /// <summary>
+        /// Finished being processed.
+        /// </summary>
+        public bool Processed { get; set; }
 
         public TradeRequest(CivilianResource request, List<CivilianResource> declined, int urgency, GameEntity_Squad station, int maxSearchHops)
         {
@@ -57,7 +70,7 @@ namespace SKCivilianIndustry
 
         public override string ToString()
         {
-            string output = "Requested: " + Requested.ToString() + " Urgency: " + Urgency + " Planet: " + Station.Planet.Name + " Processed: " + Processed;
+            string output = $"Requested: {Requested.ToString()} Urgency: {Urgency} Planet: {Station.Planet.Name} Processed: {Processed}";
             if (Declined.Count > 0)
             {
                 output += " Declined: ";

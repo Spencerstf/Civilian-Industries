@@ -27,7 +27,7 @@ namespace SKCivilianIndustry
             {
                 Buffer.StartColor(CivilianResourceHexColors.Color[x]);
                 if (cargoData.Amount[x] > 0 || cargoData.PerSecond[x] != 0)
-                    Buffer.Add("\n" + cargoData.Amount[x] + "/" + cargoData.Capacity[x] + " " + ((CivilianResource)x).ToString());
+                    Buffer.Add($"\n{cargoData.Amount[x]}/{cargoData.Capacity[x]} {(CivilianResource)x}");
                 Buffer.EndColor();
                 // If resource has generation or drain, notify them.
                 if (cargoData.PerSecond[x] > 0)

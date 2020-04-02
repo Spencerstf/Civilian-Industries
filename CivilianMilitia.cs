@@ -15,17 +15,25 @@ namespace SKCivilianIndustry
     {
         public int Version;
 
-        // The centerpiece of the flee.t
+        /// <summary>
+        /// The centerpiece of the fleet.
+        /// </summary>
         public int Centerpiece;
 
-        // The status of the fleet.
+        /// <summary>
+        /// Status of the fleet.
+        /// </summary>
         public CivilianMilitiaStatus Status;
 
-        // The planet that this fleet's focused on.
-        // It will only interact to hostile forces on or adjacent to this.
+        /// <summary>
+        /// The planet that this fleet is focused on.
+        /// It will only interact to hostile forces on or adjacent to this.
+        /// </summary>
         public int PlanetFocus;
 
-        // Wormhole that this fleet has been assigned to. If -1, it will instead find an unclaimed mine on the planet.
+        /// <summary>
+        /// Wormhole that this fleet has been asigned to. If -1 then it will instead find an unclaimed mine on the planet.
+        /// </summary>
         public int EntityFocus;
 
         // GameEntityTypeData that this militia builds, a list of every ship of that type under their control, and their capacity.
@@ -78,7 +86,11 @@ namespace SKCivilianIndustry
             this.CostMultiplier = 100; // 100%
             this.CapMultiplier = 100; // 100%
         }
-        // Saving our data.
+
+        /// <summary>
+        /// Used to save our data to buffer.
+        /// </summary>
+        /// <param name="Buffer"></param>
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
             Buffer.AddItem(1);
@@ -100,7 +112,11 @@ namespace SKCivilianIndustry
             Buffer.AddItem(this.CostMultiplier);
             Buffer.AddItem(this.CapMultiplier);
         }
-        // Loading our data. Make sure the loading order is the same as the saving order.
+
+        /// <summary>
+        /// Used to load our data from buffer.
+        /// </summary>
+        /// <param name="Buffer"></param>
         public CivilianMilitia(ArcenDeserializationBuffer Buffer)
         {
             this.Version = Buffer.ReadInt32();
