@@ -41,6 +41,11 @@ namespace SKCivilianIndustry
         public Dictionary<int, List<int>> Ships = new Dictionary<int, List<int>>();
         public Dictionary<int, int> ShipCapacity = new Dictionary<int, int>();
 
+        /// <summary>
+        /// Count the number of ships of a certain type that this militia controls.
+        /// </summary>
+        /// <param name="entityTypeDataInternalName" >Internal Name of the Entity to count.</param>
+        /// <returns></returns>
         public int GetShipCount(string entityTypeDataInternalName)
         {
             int index = -1;

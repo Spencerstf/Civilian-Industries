@@ -444,6 +444,26 @@
             multiplier_to_all_scales="0.5"
     >
     </entity>
+    <entity name="CivKineticSpikeTurret" display_name="Civilian Kinetic Spike Turret" skip_export="true" copy_from="EnsnarerFortifiedTeslaTurret"
+            tags="CivMeleeTurret,CivTurret"
+            description="An extremely simplistic turret, it comes with a single tractor beam and a kinetic spike shot that pierces all shields."
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+      <system name="TeslaCoil" max_mark_level_to_function="0"></system>
+      <system name="Spike" display_name="Kinetic Spike"
+				  category="Weapon" firing_timing="OnlyInRange"
+				  damage_per_shot="1200" range="Normal2" shot_speed="Normal" rate_of_fire="Misery" fires_salvos_sequentially="true"
+				  shot_type_data="ArmorPiercingShell"	
+				  base_percent_damage_bypasses_personal_shields="1"
+				  >
+          <outgoing_damage_modifier based_on="Armor_mm" comparison_type="AtLeast" compared_to="90" multiplier="3" />
+      </system>
+      <system name="TractorBeam" tractor_count="1" tractor_count_added_per_mark="0" tractor_hits_albedo_less_than="0.5" tractor_hits_engine_gx_less_than="10"
+				>
+      </system>
+    </entity>
 	<entity name="Excalibur" display_name="Excalibur Protector" skip_export="true" copy_from="VampireClaw"
                 tags="CivMeleeProtector,CivProtector"
 				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
@@ -482,6 +502,22 @@
             damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
             multiplier_to_all_scales="0.5"
     >
+    </entity>
+    <entity name="CivBlitzCannonTurret" display_name="Civilian Blitz Cannon Turret" skip_export="true" copy_from="TritiumSniperTurret"
+            tags="CivRaidTurret,CivTurret"
+            description="Hammers away at the hull of healthy ships from any range."
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+      <system name="TritiumRailcannon" max_mark_level_to_function="0"></system>
+      <system name="BlitzCannon" display_name="Blitz Cannon"
+				  category="Weapon" firing_timing="OnlyInRange"
+				  damage_per_shot="125" range="EssentiallyInfinite" shot_speed="VeryFast" rate_of_fire="Normal" fires_salvos_sequentially="true"
+				  shot_type_data="ExtremeLongRangeRailgun" cloaking_percent_loss_from_firing="0.1" base_percent_damage_bypasses_personal_shields="0.5"
+				  >
+          <outgoing_damage_modifier based_on="CurrentHullPercentage" applies_to="HullOnly" comparison_type="AtLeast" compared_to="75" multiplier="5" />
+      </system>
     </entity>
 	<entity name="GrimReaper" display_name="Grim Reaper Protector" skip_export="true" copy_from="RaidFrigate"
                 tags="CivRaidProtector,CivProtector"
@@ -619,6 +655,26 @@
             damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
             multiplier_to_all_scales="0.5"
     >
+    </entity>
+    <entity name="CivTechnoBabbleTurret" display_name="Civilian Techno Babble Turret" skip_export="true" copy_from="PikeTurret"
+              tags="CivTechnologistTurret,CivTurret"
+              description="Provides mid-ranged tachyon and a Plinker Cannon to offer some offensive use."
+              multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+              damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+              multiplier_to_all_scales="2"
+      >
+      <system name="Petard" max_mark_level_to_function="0"></system>
+      <system name="Plink" display_name="Plinker Cannon"
+				category="Weapon" firing_timing="OnlyInRange"
+				damage_per_shot="350" range="AboveAverage3" shot_speed="Normal" rate_of_fire="High" fires_salvos_sequentially="true"
+				shot_type_data="PikeShot_Gold" cloaking_percent_loss_from_firing="0.1"
+				>
+      </system>
+      <system name="TachyonArray" display_name="Tachyon Array"
+				category="Passive"
+				tachyon_points="50" tachyon_points_added_per_mark="25" tachyon_range="AboveAverage3" tachyon_hits_albedo_less_than="0.75"
+				>
+      </system>
     </entity>
 	<entity name="Orchestrator" display_name="Orchestrator Protector" skip_export="true" copy_from="CarrierGuardian"
                 tags="CivTechnologistProtector,CivProtector"
