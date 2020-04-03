@@ -23,23 +23,9 @@ namespace SKCivilianIndustry
             CivilianMilitia militiaData = RelatedEntityOrNull.GetCivilianMilitiaExt();
             CivilianCargo cargoData = RelatedEntityOrNull.GetCivilianCargoExt();
 
-            // In order to find our player faction (which we'll need to display the ship capacity, as its based on aip)
-            // We'll have to load our world data.
-            CivilianWorld worldData = World.Instance.GetCivilianWorldExt();
-            Faction playerFaction = null;
-            CivilianFaction factionData = null;
-            // Look through our saved factions to find which one has our militia ship
-            for (int x = 0; x < worldData.Factions.Count; x++)
-            {
-                CivilianFaction tempData = worldData.getFactionInfo(x).factionData;
-                if (tempData.MilitiaLeaders.Contains(RelatedEntityOrNull.PrimaryKeyID))
-                {
-                    playerFaction = worldData.getFactionInfo(x).faction;
-                    factionData = playerFaction.GetCivilianFactionExt();
-                }
-            }
+            CivilianFaction factionData = RelatedEntityOrNull.PlanetFaction.Faction.GetCivilianFactionExt();
 
-            if (factionData == null || playerFaction == null)
+            if (factionData == null )
                 return;
 
             // Inform them about any focus the ship may have.

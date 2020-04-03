@@ -10,7 +10,7 @@
             Builds Cargo Ships and Militia Construction Ships
     -->
     <entity name="GrandStation" display_name="Grand Station"
-            description="The hub of our civilian trade. If this is destroyed, our civilian economy will crumble. Upgraded by Economic/Logistic Command and Engineering Tech."
+            description="The central hub of trade. If this is destroyed, the civilian economy will crumble. Upgraded by Economic/Logistic Command and Engineering Tech."
             tags="CivilianIndustryEntity,GrandStation,CargoShipProducer,ShowsOnNormalDisplayMode"
             visuals="assets/_finalgamemeshes/humanbuildings/spacedock/spacedock.prefab"
             gimbal_name="AstroTrainStation"
@@ -69,7 +69,7 @@
     </entity>
     <!--	Trade Posts
                     Build by player-controlled Battlestations and Citadels
-                    Acts like half-potency trade stations.
+                    Acts like partial-potency trade stations.
     -->
     <entity name="TradePost" display_name="Trade Post" copy_from="TradeStation" tags="CivilianIndustryEntity,TradePost"
                 build_sidebar_categories_i_am_part_of="MilitiaBuildings"
@@ -80,7 +80,7 @@
                 visuals_scale_multiplier="5" size_scale="5"
                 tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,MetalGeneration"
     >
-        <metal_flow purpose="SelfConstruction" throughput="500"/>
+        <metal_flow purpose="SelfConstruction" throughput="250"/>
     </entity>
     <!--    Cargo ship.
             Used to transfer resources between trade stations and the grand station.
@@ -198,7 +198,7 @@
             description_appender_dll="SKCivilianIndustry"
             description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
             tech_upgrades_that_benefit_me="Citadels,Forcefields">
-        <metal_flow purpose="SelfConstruction" throughput="500"/>
+        <metal_flow purpose="SelfConstruction" throughput="250"/>
     </entity>
 	<!--	Militia Protector Shipyards
 			Built by player controlled Battlestations and Citadels
@@ -206,18 +206,19 @@
 	-->
 	<entity	name="MilitiaProtectorShipyards" display_name="Militia Protector Shipyards" skip_export="true" copy_from="MilitiaHeadquarters"
 			tags="MilitiaShip,MilitiaProtectorShipyards,BuildsProtectors,CivilianIndustryEntity"
-			metal_cost="3000000" energy_consumption="100000"
+			metal_cost="3000000" energy_consumption="150000"
 			description="The centerpiece of a powerful Militia Fleet, funded by the Military. Requests a large amount of resources to build powerful Protector ships to support the Battlestation or Citadel that built it. Upgraded by Citadels and Forcefields Tech."
 			special_entity_type="NPCFactionCenterpiece"
-            build_sidebar_categories_i_am_part_of="MilitiaBuildings"
-            description_appender_dll="SKCivilianIndustry"
-            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
-            tech_upgrades_that_benefit_me="Citadels,Forcefields">
-			<metal_flow purpose="SelfConstruction" throughput="1000"/>
+      build_sidebar_categories_i_am_part_of="MilitiaBuildings"
+      description_appender_dll="SKCivilianIndustry"
+      description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
+      tech_upgrades_that_benefit_me="Citadels,Forcefields"
+      absolute_max_cap_when_in_fleets="1">
+			<metal_flow purpose="SelfConstruction" throughput="250"/>
 	</entity>
     <!--    Militia Barracks
             Manually placed by the player.
-            Up to 3 per planet, boosts the capacity of all turret/ship building militia buildings on the planet by 33%
+            Default 1 per planet, boosts the capacity of all turret/ship building militia buildings on the planet by 33%
     -->
     <entity name="MilitiaBarracks" display_name="Militia Barracks" skip_export="true" copy_from="TradeStation" tags="MilitiaShip,MilitiaBarracks,CivilianIndustryEntity"
             special_entity_type="NPCFactionCenterpiece"
@@ -226,7 +227,7 @@
             description="A focal point for local defensive forces for the region. Boosts Turret and Ship capacity for Militia buildings on this and adjacent planets by 33% or a flat 1, whichever is greater."
             metal_cost="5000000" energy_consumption="50000"
     >
-        <metal_flow purpose="SelfConstruction" throughput="2500"/>
+        <metal_flow purpose="SelfConstruction" throughput="250"/>
     </entity>
     <!--    Ships and turrets spawnt by the militia part of the faction.
     -->
@@ -608,6 +609,7 @@
             damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
             multiplier_to_all_scales="0.5"
     >
+      <system name="ParalysisBolt" shots_per_salvo="4" damage_per_shot="2240"></system>
     </entity>
     <entity name="CivSpiderTurret" display_name="Civilian Spider Turret" skip_export="true" copy_from="SpiderTurret"
             tags="CivSubterfugeTurret,CivTurret"

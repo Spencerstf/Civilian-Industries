@@ -7,10 +7,11 @@
            type_name="SKCivilianIndustry.SpecialFaction_SKCivilianIndustry"
            team_center_color="Purple" team_border_color="cF8F8FF"
            type="SpecialFaction"
-           must_be_at_most_one="true"
-           description="A player aligned faction consisting of hardworking humans. As you expand to other planets, they will expand along with you to bolster your economy and offer you additional defensive and utility buildings on your colonies."
-  >
+           description="A faction consisting of hardworking humans. As you expand to other planets, they will expand along with you to bolster your economy and offer you additional defensive and utility buildings on your colonies.">
   <custom_field name="Intensity" display_name="Strength" description="Just how effective is this faction?"
-          sort_group="200" setting_type="IntSlider" default="5" min="1" max="10" />		  
+          sort_group="200" setting_type="IntSlider" default="5" min="1" max="10" />
+    <custom_field name="Allegiance" display_name="Allegiance" description="What team will this industry support?"
+          sort_group="250" setting_type="CustomDropdownArbitraryOptions" 
+          arbitrary_options="Player Team,Minor Faction Team Red,Minor Faction Team Blue,Minor Faction Team Green" default_option="Player Team" />
   </faction>
 </root>

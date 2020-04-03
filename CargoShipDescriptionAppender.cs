@@ -19,17 +19,6 @@ namespace SKCivilianIndustry
             // Make sure we are getting an entity.
             if (RelatedEntityOrNull == null)
                 return;
-            // Need to find our faction data to display information.
-            // Look through our world data, first, to find which faction controls our starting station, and load its faction data.
-            CivilianWorld worldData = World.Instance.GetCivilianWorldExt();
-            CivilianFaction factionData = null;
-            // Look through our saved factions to find which one has our starting station
-            for (int x = 0; x < worldData.Factions.Count; x++)
-            {
-                var tempData = worldData.getFactionInfo(x);
-                if (tempData.factionData.CargoShips.Contains(RelatedEntityOrNull.PrimaryKeyID))
-                    factionData = tempData.factionData;
-            }
 
             // Load our cargo data.
             CivilianCargo cargoData = RelatedEntityOrNull.GetCivilianCargoExt();

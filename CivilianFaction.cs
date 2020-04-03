@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SKCivilianIndustry.Persistence;
 
 namespace SKCivilianIndustry
 {
@@ -117,112 +118,6 @@ namespace SKCivilianIndustry
                 return (0, 0, 0, 0, 0, 0, 0, 0);
             }
         }
-        // Calculate threat values every planet that our mobile forces are on or adjacent to.
-        public void CalculateThreat(Faction faction, Faction playerFaction)
-        {
-            // Empty our dictionary.
-            ThreatReports = new List<ThreatReport>();
-
-            // Get the grand station's planet, to easily figure out when we're processing the home planet.
-            GameEntity_Squad grandStation = World_AIW2.Instance.GetEntityByID_Squad(GrandStation);
-            if (grandStation == null)
-                return;
-            Planet grandPlanet = grandStation.Planet;
-            if (grandPlanet == null)
-                return;
-
-            List<int> processed = new List<int>();
-            faction.Entities.DoForEntities(delegate (GameEntity_Squad squad)
-            {
-                squad.Planet.DoForLinkedNeighborsAndSelf(delegate (Planet planet)
-                {
-                    // Stop if its already processed.
-                    if (processed.Contains(planet.Index))
-                        return DelReturn.Continue;
-
-                    // Prepare variables to hold our soon to be detected threat values.
-                    int friendlyMobileStrength = 0, friendlyGuardStrength = 0, cloakedHostileStrength = 0, nonCloakedHostileStrength = 0, militiaMobileStrength = 0, militiaGuardStrength = 0, waveStrength = 0;
-                    // Wave detection.
-                    for (int j = 0; j < World_AIW2.Instance.AIFactions.Count; j++)
-                    {
-                        Faction aiFaction = World_AIW2.Instance.AIFactions[j];
-                        List<PlannedWave> QueuedWaves = aiFaction.GetWaveList();
-                        for (int k = 0; k < QueuedWaves.Count; k++)
-                        {
-                            PlannedWave wave = QueuedWaves[k];
-
-                            if (wave.targetPlanetIdx != planet.Index)
-                                continue;
-
-                            if (wave.gameTimeInSecondsForLaunchWave - World_AIW2.Instance.GameSecond <= 90)
-                                nonCloakedHostileStrength += wave.CalculateStrengthOfWave(aiFaction) * 3;
-
-                            else if (wave.playerBeingAlerted)
-                                waveStrength += wave.CalculateStrengthOfWave(aiFaction);
-                        }
-                    }
-
-                    // Get hostile strength.
-                    LongRangePlanningData_PlanetFaction linkedPlanetFactionData = planet.LongRangePlanningData.PlanetFactionDataByIndex[faction.FactionIndex];
-                    LongRangePlanning_StrengthData_PlanetFaction_Stance hostileStrengthData = linkedPlanetFactionData.DataByStance[FactionStance.Hostile];
-                    // If on friendly planet, triple the threat.
-                    if (planet.GetControllingFaction() == playerFaction)
-                        nonCloakedHostileStrength += hostileStrengthData.TotalStrength * 3;
-                    else // If on hostile planet, don't factor in stealth.
-                    {
-                        nonCloakedHostileStrength += hostileStrengthData.TotalStrength - hostileStrengthData.CloakedStrength;
-                        cloakedHostileStrength += hostileStrengthData.CloakedStrength;
-                    }
-
-                    // Adjacent planet threat matters as well, but not as much as direct threat.
-                    // We'll only add it if the planet has no friendly forces on it.
-                    if (planet.GetControllingFaction() == playerFaction)
-                        planet.DoForLinkedNeighbors(delegate (Planet linkedPlanet)
-                        {
-                            linkedPlanetFactionData = linkedPlanet.LongRangePlanningData.PlanetFactionDataByIndex[faction.FactionIndex];
-                            LongRangePlanning_StrengthData_PlanetFaction_Stance attackingStrengthData = linkedPlanetFactionData.DataByStance[FactionStance.Friendly];
-                            int attackingStrength = attackingStrengthData.TotalStrength;
-                            attackingStrengthData = linkedPlanetFactionData.DataByStance[FactionStance.Self];
-                            attackingStrength += attackingStrengthData.TotalStrength;
-
-                            if (attackingStrength < 1000)
-                            {
-                                hostileStrengthData = linkedPlanetFactionData.DataByStance[FactionStance.Hostile];
-                                nonCloakedHostileStrength += hostileStrengthData.RelativeToHumanTeam_ThreatStrengthVisible;
-                                nonCloakedHostileStrength += hostileStrengthData.TotalHunterStrengthVisible;
-                            }
-
-                            return DelReturn.Continue;
-                        });
-
-                    // If on home plant, double the total threat.
-                    if (planet.Index == grandPlanet.Index)
-                        nonCloakedHostileStrength *= 2;
-
-                    // Get friendly strength on the planet.
-                    LongRangePlanningData_PlanetFaction planetFactionData = planet.LongRangePlanningData.PlanetFactionDataByIndex[faction.FactionIndex];
-                    LongRangePlanning_StrengthData_PlanetFaction_Stance friendlyStrengthData = planetFactionData.DataByStance[FactionStance.Friendly];
-                    friendlyMobileStrength += friendlyStrengthData.MobileStrength;
-                    friendlyGuardStrength += friendlyStrengthData.TotalStrength - friendlyMobileStrength;
-
-                    // Get militia strength on the planet.
-                    LongRangePlanning_StrengthData_PlanetFaction_Stance militiaStrengthData = planetFactionData.DataByStance[FactionStance.Self];
-                    militiaMobileStrength = militiaStrengthData.MobileStrength;
-                    militiaGuardStrength = militiaStrengthData.TotalStrength - militiaMobileStrength;
-
-                    // Save our threat value.
-                    ThreatReports.Add(new ThreatReport(planet, militiaGuardStrength, militiaMobileStrength, friendlyGuardStrength, friendlyMobileStrength, cloakedHostileStrength, nonCloakedHostileStrength, waveStrength));
-
-                    // Add to the proccessed list.
-                    processed.Add(planet.Index);
-
-                    return DelReturn.Continue;
-                });
-                return DelReturn.Continue;
-            });
-            // Sort our reports.
-            ThreatReports.Sort();
-        }
 
         // Returns the base resource cost for ships.
         public int GetResourceCost(Faction faction)
@@ -231,17 +126,16 @@ namespace SKCivilianIndustry
             return 51 - (int)Math.Pow(faction.Ex_MinorFactionCommon_GetPrimitives().Intensity, 1.5);
         }
 
-        // Returns the current capacity for turrets/ships.
-        public int GetCap(Faction faction)
+        /// <summary>
+        /// Returns the ship/turret capacity. Base 20, increases based on intensity and trade station count.
+        /// </summary>
+        /// <returns></returns>
+        public int GetCap( Faction faction )
         {
-            // ((baseCap + (AIP / AIPDivisor)) ^ (1 + (Intensity / IntensityDivisor)))
-            int cap = 0;
-            int baseCap = 20;
-            int AIPDivisor = 2;
-            int IntensityDivisor = 25;
-            for (int y = 0; y < World_AIW2.Instance.AIFactions.Count; y++)
-                cap = (int)(Math.Ceiling(Math.Pow(Math.Max(cap, baseCap + World_AIW2.Instance.AIFactions[y].GetAICommonExternalData().AIProgress_Total.ToInt() / AIPDivisor),
-                     1 + (faction.Ex_MinorFactionCommon_GetPrimitives().Intensity / IntensityDivisor))));
+            int cap = 20;
+            for ( int x = 0; x < TradeStations.Count; x++ )
+                for ( int y = 0; y < faction.Ex_MinorFactionCommon_GetPrimitives().Intensity; y++ )
+                    cap = Math.Min( (int)Math.Ceiling( cap * 1.01 ), cap + 5 );
             return cap;
         }
 
@@ -262,6 +156,48 @@ namespace SKCivilianIndustry
                 this.CargoShipsPathing.Remove(cargoShipID);
             if (this.CargoShipsEnroute.Contains(cargoShipID))
                 this.CargoShipsEnroute.Remove(cargoShipID);
+        }
+
+        /// <summary>
+        /// Returns true if we should consider the planet friendly.
+        /// </summary>
+        /// <param name="faction">The Civilian Industry faction to check.</param>
+        /// <param name="planet">The Planet to check.</param>
+        /// <returns></returns>
+        public bool IsPlanetFriendly( Faction faction, Planet planet )
+        {
+            if ( planet.GetControllingOrInfluencingFaction().GetIsFriendlyTowards( faction ) )
+                return true; // If planet is owned by a friendly faction, its friendly.
+
+            for ( int x = 0; x < TradeStations.Count; x++ )
+            {
+                GameEntity_Squad tradeStation = World_AIW2.Instance.GetEntityByID_Squad( TradeStations[x] );
+                if ( tradeStation == null )
+                    continue;
+                if ( tradeStation.Planet.Index == planet.Index )
+                    return true; // Planet has a trade station on it, its friendly.
+            }
+
+            for(int x = 0; x < MilitiaLeaders.Count; x++ )
+            {
+                GameEntity_Squad militia = World_AIW2.Instance.GetEntityByID_Squad( MilitiaLeaders[x] );
+                if ( militia == null )
+                    continue;
+                if ( militia.Planet.Index == planet.Index )
+                    return true; // Planet has a militia leader on it, its friendly.
+
+                CivilianMilitia militiaData = militia.GetCivilianMilitiaExt();
+                if ( militiaData.Centerpiece == -1 )
+                    continue;
+                GameEntity_Squad centerpiece = World_AIW2.Instance.GetEntityByID_Squad( militiaData.Centerpiece );
+                if ( centerpiece == null )
+                    continue;
+                if ( centerpiece.Planet.Index == planet.Index )
+                    return true; // Planet has a militia leader's centerpiece on it, its friendly.
+            }
+
+            // Nothing passed. Its hostile.
+            return false;
         }
 
         // Following three functions are used for initializing, saving, and loading data.
