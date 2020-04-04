@@ -225,7 +225,7 @@
             visuals="assets/_finalgamemeshes/humanbuildings/spacedock/spacedock.prefab"
             build_sidebar_categories_i_am_part_of="MilitiaBuildings"
             description="A focal point for local defensive forces for the region. Boosts Turret and Ship capacity for Militia buildings on this and adjacent planets by 33% or a flat 1, whichever is greater."
-            metal_cost="5000000" energy_consumption="50000"
+            metal_cost="5000000" energy_consumption="100000"
     >
         <metal_flow purpose="SelfConstruction" throughput="250"/>
     </entity>
