@@ -18,6 +18,7 @@ namespace SKCivilianIndustry
         // Let the game know we're going to want to use the DoLongRangePlanning_OnBackgroundNonSimThread_Subclass function.
         // This function is generally used for things that do not need to always run, such as navigation requests.
         protected override bool EverNeedsToRunLongRangePlanning => true;
+        protected override int MinimumSecondsBetweenLongRangePlannings => 5;
 
         // When was the last time we sent a journel message? To update the player about civies are doing.
         protected ArcenSparseLookup<Planet, int> LastGameSecondForMessageAboutThisPlanet;
@@ -2323,27 +2324,8 @@ namespace SKCivilianIndustry
                             if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationIndex != -1 )
                                 break; // Stop if already moving.
 
-                            // Not on planet yet, prepare wormhole navigation.
-                            // Tell the game wehat kind of command we want to do.
-                            // Here we'll be using the self descriptive SetWormholePath command.
-                            GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCSingleUnit], GameCommandSource.AnythingElse );
-
-                            // For wormhole pathing, we'll need to get our path from here to our goal.
-                            FactionCommonExternalData factionExternal = faction.GetCommonExternal();
-                            PlanetPathfinder pathfinder, pathfinderMain;
-                            factionExternal.GetPathfindersOfRelevanceFromContext( Context, out pathfinder, out pathfinderMain );
-
-                            List<Planet> path = pathfinder.FindPath( ship.Planet, originPlanet, 0, 0, Context );
-
-                            // Set the goal to the next planet in our path.
-                            for ( int y = 0; y < path.Count && y < 2; y++ )
-                                command.RelatedIntegers.Add( path[y].Index );
-
-                            // Have the command apply to our ship.
-                            command.RelatedEntityIDs.Add( ship.PrimaryKeyID );
-
-                            // Tell the game to apply our command.
-                            Context.QueueCommandForSendingAtEndOfContext( command );
+                            // Not on planet yet, queue a wormhole movement command.
+                            QueueWormholeCommand( ship, originPlanet );
                         }
                         break;
                     case CivilianShipStatus.Unloading:
@@ -2387,25 +2369,7 @@ namespace SKCivilianIndustry
                                 break; // Stop if already enroute.
 
                             // Not on planet yet, prepare wormhole navigation.
-                            // Tell the game wehat kind of command we want to do.
-                            // Here we'll be using the self descriptive SetWormholePath command.
-                            GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCSingleUnit], GameCommandSource.AnythingElse );
-
-                            // For wormhole pathing, we'll need to get our path from here to our goal.
-                            FactionCommonExternalData factionExternal = faction.GetCommonExternal();
-                            PlanetPathfinder pathfinder, pathfinderMain;
-                            factionExternal.GetPathfindersOfRelevanceFromContext( Context, out pathfinder, out pathfinderMain );
-                            List<Planet> path = pathfinder.FindPath( ship.Planet, destinationPlanet, 0, 0, Context );
-
-                            // Set the goal to the next planet in our path.
-                            for ( int y = 0; y < path.Count && y < 2; y++ )
-                                command.RelatedIntegers.Add( path[y].Index );
-
-                            // Have the command apply to our ship.
-                            command.RelatedEntityIDs.Add( ship.PrimaryKeyID );
-
-                            // Tell the game to apply our command.
-                            Context.QueueCommandForSendingAtEndOfContext( command );
+                            QueueWormholeCommand( ship, destinationPlanet );
                         }
                         break;
                     case CivilianShipStatus.Idle:
@@ -2484,25 +2448,7 @@ namespace SKCivilianIndustry
                         if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationIndex != -1 )
                             continue; // Stop if we're already enroute.
 
-                        // Tell the game wehat kind of command we want to do.
-                        // Here we'll be using the self descriptive SetWormholePath command.
-                        GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCSingleUnit], GameCommandSource.AnythingElse );
-
-                        // For wormhole pathing, we'll need to get our path from here to our goal.
-                        FactionCommonExternalData factionExternal = faction.GetCommonExternal();
-                        PlanetPathfinder pathfinder, pathfinderMain;
-                        factionExternal.GetPathfindersOfRelevanceFromContext( Context, out pathfinder, out pathfinderMain );
-                        List<Planet> path = pathfinder.FindPath( ship.Planet, planet, 0, 0, Context );
-
-                        // Set the goal to the next planet in our path.
-                        for ( int y = 0; y < path.Count && y < 2; y++ )
-                            command.RelatedIntegers.Add( path[y].Index );
-
-                        // Have the command apply to our ship.
-                        command.RelatedEntityIDs.Add( ship.PrimaryKeyID );
-
-                        // Tell the game to apply our command.
-                        Context.QueueCommandForSendingAtEndOfContext( command );
+                        QueueWormholeCommand( ship, planet );
                     }
                 }
                 else if ( shipStatus.Status == CivilianMilitiaStatus.EnrouteWormhole )
@@ -2657,28 +2603,12 @@ namespace SKCivilianIndustry
                                     if ( entity.LongRangePlanningData.FinalDestinationIndex == centerpiece.Planet.Index )
                                         continue; // Stop if already moving towards it.
 
-                                    // Get a path for the ship to take, and give them the command.
-                                    List<Planet> path = faction.FindPath( entity.Planet, centerpiece.Planet, Context );
-
-                                    // Create and add all required parts of a wormhole move command.
-                                    GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCSingleUnit], GameCommandSource.AnythingElse );
-                                    command.RelatedEntityIDs.Add( entity.PrimaryKeyID );
-                                    for ( int p = 0; p < path.Count; p++ )
-                                        command.RelatedIntegers.Add( path[p].Index );
-                                    Context.QueueCommandForSendingAtEndOfContext( command );
+                                    QueueWormholeCommand( entity, centerpiece.Planet );
                                 }
                                 else
                                 {
                                     // Not yet on our target planet, and we're on our centerpice planet. Path to our target planet.
-                                    // Get a path for the ship to take, and give them the command.
-                                    List<Planet> path = faction.FindPath( entity.Planet, targetPlanet, Context );
-
-                                    // Create and add all required parts of a wormhole move command.
-                                    GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCSingleUnit], GameCommandSource.AnythingElse );
-                                    command.RelatedEntityIDs.Add( entity.PrimaryKeyID );
-                                    for ( int p = 0; p < path.Count; p++ )
-                                        command.RelatedIntegers.Add( path[p].Index );
-                                    Context.QueueCommandForSendingAtEndOfContext( command );
+                                    QueueWormholeCommand( entity, targetPlanet );
                                 }
                             }
                         }
@@ -2869,19 +2799,7 @@ namespace SKCivilianIndustry
                                 notReady++;
                                 if ( entity.LongRangePlanningData.FinalDestinationIndex != centerpiece.Planet.Index )
                                 {
-                                    // Get a path for the ship to take, and give them the command.
-                                    List<Planet> path = faction.FindPath( entity.Planet, centerpiece.Planet, Context );
-
-                                    // Create and add all required parts of a wormhole move command.
-                                    GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCSingleUnit], GameCommandSource.AnythingElse );
-                                    command.RelatedEntityIDs.Add( entity.PrimaryKeyID );
-                                    for ( int p = 0; p < path.Count; p++ )
-                                    {
-                                        Planet nextPlanet = path[p];
-                                        if ( nextPlanet != null )
-                                            command.RelatedIntegers.Add( nextPlanet.Index );
-                                    }
-                                    Context.QueueCommandForSendingAtEndOfContext( command );
+                                    QueueWormholeCommand( entity, centerpiece.Planet );
                                 }
                             }
                             else if ( wormhole != null && wormhole.WorldLocation.GetExtremelyRoughDistanceTo( entity.WorldLocation ) > 5000
@@ -2964,28 +2882,12 @@ namespace SKCivilianIndustry
                                         if ( entity.LongRangePlanningData.FinalDestinationIndex == centerpiece.Planet.Index )
                                             continue; // Stop if already moving towards it.
 
-                                        // Get a path for the ship to take, and give them the command.
-                                        List<Planet> path = faction.FindPath( entity.Planet, centerpiece.Planet, Context );
-
-                                        // Create and add all required parts of a wormhole move command.
-                                        GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCSingleUnit], GameCommandSource.AnythingElse );
-                                        command.RelatedEntityIDs.Add( entity.PrimaryKeyID );
-                                        for ( int p = 0; p < path.Count; p++ )
-                                            command.RelatedIntegers.Add( path[p].Index );
-                                        Context.QueueCommandForSendingAtEndOfContext( command );
+                                        QueueWormholeCommand( entity, centerpiece.Planet );
                                     }
                                     else
                                     {
                                         // Not yet on our target planet, and we're on our centerpice planet. Path to our target planet.
-                                        // Get a path for the ship to take, and give them the command.
-                                        List<Planet> path = faction.FindPath( entity.Planet, assessment.Target, Context );
-
-                                        // Create and add all required parts of a wormhole move command.
-                                        GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCSingleUnit], GameCommandSource.AnythingElse );
-                                        command.RelatedEntityIDs.Add( entity.PrimaryKeyID );
-                                        for ( int p = 0; p < path.Count; p++ )
-                                            command.RelatedIntegers.Add( path[p].Index );
-                                        Context.QueueCommandForSendingAtEndOfContext( command );
+                                        QueueWormholeCommand( entity, assessment.Target );
                                     }
                                 }
                             }
@@ -3047,15 +2949,7 @@ namespace SKCivilianIndustry
                                 ( entity.Planet.GetHopsTo(centerpiece.Planet) > 1 || threat.Total <= 1000 || 
                                 threat.MilitiaMobile + threat.MilitiaGuard + threat.FriendlyGuard + threat.FriendlyMobile < threat.Total * 1.25) )
                             {
-                                // Get a path for the ship to take, and give them the command.
-                                List<Planet> path = faction.FindPath( entity.Planet, centerpiece.Planet, Context );
-
-                                // Create and add all required parts of a wormhole move command.
-                                GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCSingleUnit], GameCommandSource.AnythingElse );
-                                command.RelatedEntityIDs.Add( entity.PrimaryKeyID );
-                                for ( int p = 0; p < path.Count; p++ )
-                                    command.RelatedIntegers.Add( path[p].Index );
-                                Context.QueueCommandForSendingAtEndOfContext( command );
+                                QueueWormholeCommand( entity, centerpiece.Planet );
                             }
                         }
                     }
@@ -3150,6 +3044,59 @@ namespace SKCivilianIndustry
             }
         }
 
+        // A collection of every single wormhole command we want to execute.
+        ArcenSparseLookup<Planet, ArcenSparseLookup<Planet, List<GameEntity_Squad>>> wormholeCommands;
+
+        /// <summary>
+        /// Add an entity that needs a wormhole move command.
+        /// </summary>
+        /// <param name="entity">The ship to move.</param>
+        /// <param name="destination">The planet to move to.</param>
+        private void QueueWormholeCommand(GameEntity_Squad entity, Planet destination )
+        {
+            Planet origin = entity.Planet;
+            if ( !wormholeCommands.GetHasKey( origin ) )
+                wormholeCommands.AddPair( origin, new ArcenSparseLookup<Planet, List<GameEntity_Squad>>() );
+            if ( !wormholeCommands[origin].GetHasKey( destination ) )
+                wormholeCommands[origin].AddPair( destination, new List<GameEntity_Squad>() );
+            wormholeCommands[origin][destination].Add( entity );
+        }
+
+        public void ExecuteWormholeCommands( Faction faction, ArcenLongTermIntermittentPlanningContext Context )
+        {
+            for ( int x = 0; x < wormholeCommands.GetPairCount(); x++ )
+            {
+                ArcenSparseLookupPair<Planet, ArcenSparseLookup<Planet, List<GameEntity_Squad>>> originPair = wormholeCommands.GetPairByIndex( x );
+                if ( originPair == null )
+                    continue;
+                Planet origin = originPair.Key;
+                ArcenSparseLookup<Planet, List<GameEntity_Squad>> destinations = originPair.Value;
+                for ( int y = 0; y < destinations.GetPairCount(); y++ )
+                {
+                    ArcenSparseLookupPair<Planet, List<GameEntity_Squad>> destinationPair = destinations.GetPairByIndex( y );
+                    if ( destinationPair == null )
+                        continue;
+                    Planet destination = destinationPair.Key;
+                    List<GameEntity_Squad> entities = destinationPair.Value;
+                    if ( entities == null )
+                        continue;
+                    List<Planet> path = faction.FindPath( origin, destination, Context );
+                    GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCDirectedMob], GameCommandSource.AnythingElse );
+                    for ( int p = 0; p < path.Count; p++ )
+                        command.RelatedIntegers.Add( path[p].Index );
+                    for ( int z = 0; z < entities.Count; z++ )
+                    {
+                        GameEntity_Squad entity = entities[z];
+                        if ( entity != null && entity.LongRangePlanningData.FinalDestinationIndex != destination.Index )
+                            command.RelatedEntityIDs.Add( entity.PrimaryKeyID );
+                    }
+                    if ( command.RelatedEntityIDs.Count > 0 )
+                        Context.QueueCommandForSendingAtEndOfContext( command );
+                }
+            }
+            wormholeCommands = null;
+        }
+
         // Do NOT directly change anything from this function. Doing so may cause desyncs in multiplayer.
         // What you can do from here is queue up game commands for units, and send them to be done via QueueCommandForSendingAtEndOfContext.
         public override void DoLongRangePlanning_OnBackgroundNonSimThread_Subclass( Faction faction, ArcenLongTermIntermittentPlanningContext Context )
@@ -3160,12 +3107,19 @@ namespace SKCivilianIndustry
             if ( factionData == null )
                 return; // Wait until we have our faction data ready to go.
 
+            // Set up a list of all movement commands, and execute them once we're done.
+            wormholeCommands = new ArcenSparseLookup<Planet, ArcenSparseLookup<Planet, List<GameEntity_Squad>>>();
+
             CalculateThreat( faction, Context );
             DoTradeRequests( faction, Context );
             DoCargoShipMovement( faction, Context );
             DoMilitiaConstructionShipMovement( faction, Context );
             DoMilitiaThreatReaction( faction, Context );
             UpdateUnitCaps( faction, Context );
+
+            // Execute all of our wormhole commands.
+            if ( wormholeCommands.GetPairCount() > 0 )
+                ExecuteWormholeCommands(faction, Context);  
         }
 
         // Check for our stuff dying.
