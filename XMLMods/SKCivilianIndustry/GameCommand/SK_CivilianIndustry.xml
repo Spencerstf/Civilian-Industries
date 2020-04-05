@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- No functional difference, but many vanilla commands assign a unique command name for debugging. Seems like a harmless enough change so its easy to tell when a command is from this mod. -->
+  <command name="SetWormholePath_CivilianIndustryBulk" core_function="SetWormholePath_NPCDirectedMob" audio_cue="SetWormholePath" dll_name="AIWarExternalCode" type_name="Arcen.AIW2.External.GameCommand_SetWormholePath" />
+  <command name="MoveManyToOnePoint_CivilianIndustryBulk" core_function="MoveManyToOnePoint" audio_cue="Move" dll_name="AIWarExternalCode" type_name="Arcen.AIW2.External.GameCommand_MoveManyToOnePoint" />
+</root>

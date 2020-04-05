@@ -18,7 +18,9 @@ namespace SKCivilianIndustry
         // Let the game know we're going to want to use the DoLongRangePlanning_OnBackgroundNonSimThread_Subclass function.
         // This function is generally used for things that do not need to always run, such as navigation requests.
         protected override bool EverNeedsToRunLongRangePlanning => true;
-        protected override int MinimumSecondsBetweenLongRangePlannings => 5;
+
+        // The following can be set to limit the number of times the background thread can be ran.
+        //protected override int MinimumSecondsBetweenLongRangePlannings => 5;
 
         // When was the last time we sent a journel message? To update the player about civies are doing.
         protected ArcenSparseLookup<Planet, int> LastGameSecondForMessageAboutThisPlanet;
@@ -2304,20 +2306,7 @@ namespace SKCivilianIndustry
                                 break; // Stop if already enroute.
 
                             // On planet. Begin pathing towards the station.
-                            // Tell the game what kind of command we want to do.
-                            // Here, we'll be using the self descriptive MoveManyToOnePoint command.
-                            // Note: Despite saying Many, it is also used for singular movement commands.
-                            GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.MoveManyToOnePoint], GameCommandSource.AnythingElse );
-
-                            // Let the game know where we want to move to. In this case, to our origin station's location.
-                            command.RelatedPoints.Add( originStation.WorldLocation );
-
-                            // Have the command apply to our ship.
-                            command.RelatedEntityIDs.Add( ship.PrimaryKeyID );
-
-                            // Tell the game to apply our command.
-                            if ( command.RelatedPoints.Count > 0 )
-                                Context.QueueCommandForSendingAtEndOfContext( command );
+                            QueueMovementCommand( ship, originStation.WorldLocation );
                         }
                         else
                         {
@@ -2348,20 +2337,7 @@ namespace SKCivilianIndustry
                                 break; // Stop if already enroute.
 
                             // On planet. Begin pathing towards the station.
-                            // Tell the game what kind of command we want to do.
-                            // Here, we'll be using the self descriptive MoveManyToOnePoint command.
-                            // Note: Despite saying Many, it is also used for singular movement commands.
-                            GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.MoveManyToOnePoint], GameCommandSource.AnythingElse );
-
-                            // Let the game know where we want to move to. In this case, to our d station's location.
-                            command.RelatedPoints.Add( destinationStation.WorldLocation );
-
-                            // Have the command apply to our ship.
-                            command.RelatedEntityIDs.Add( ship.PrimaryKeyID );
-
-                            // Tell the game to apply our command.
-                            if ( command.RelatedPoints.Count > 0 )
-                                Context.QueueCommandForSendingAtEndOfContext( command );
+                            QueueMovementCommand( ship, destinationStation.WorldLocation );
                         }
                         else
                         {
@@ -2427,20 +2403,7 @@ namespace SKCivilianIndustry
                         if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.DestinationPoint == goalStation.WorldLocation )
                             continue; // Stop if we're already enroute.
 
-                        // Tell the game what kind of command we want to do.
-                        // Here, we'll be using the self descriptive MoveManyToOnePoint command.
-                        // Note: Despite saying Many, it is also used for singular movement commands.
-                        GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.MoveManyToOnePoint], GameCommandSource.AnythingElse );
-
-                        // Let the game know where we want to move to. In this case, to our origin station's location.
-                        command.RelatedPoints.Add( goalStation.WorldLocation );
-
-                        // Have the command apply to our ship.
-                        command.RelatedEntityIDs.Add( ship.PrimaryKeyID );
-
-                        // Tell the game to apply our command.
-                        if ( command.RelatedPoints.Count > 0 )
-                            Context.QueueCommandForSendingAtEndOfContext( command );
+                        QueueMovementCommand( ship, goalStation.WorldLocation );
                     }
                     else
                     {
@@ -2472,20 +2435,7 @@ namespace SKCivilianIndustry
                     if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.DestinationPoint.GetDistanceTo( point, true ) < 1000 )
                         continue; // Stop if we're already enroute.
 
-                    // Tell the game what kind of command we want to do.
-                    // Here, we'll be using the self descriptive MoveManyToOnePoint command.
-                    // Note: Despite saying Many, it is also used for singular movement commands.
-                    GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.MoveManyToOnePoint], GameCommandSource.AnythingElse );
-
-                    // Let the game know where we want to move to.
-                    command.RelatedPoints.Add( point );
-
-                    // Have the command apply to our ship.
-                    command.RelatedEntityIDs.Add( ship.PrimaryKeyID );
-
-                    // Tell the game to apply our command.
-                    if ( command.RelatedPoints.Count > 0 )
-                        Context.QueueCommandForSendingAtEndOfContext( command );
+                    QueueMovementCommand( ship, point );
                 }
                 else if ( shipStatus.Status == CivilianMilitiaStatus.EnrouteMine )
                 {
@@ -2503,20 +2453,7 @@ namespace SKCivilianIndustry
                     if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.DestinationPoint == mine.WorldLocation )
                         continue; // Stop if we're enroute.
 
-                    // Tell the game what kind of command we want to do.
-                    // Here, we'll be using the self descriptive MoveManyToOnePoint command.
-                    // Note: Despite saying Many, it is also used for singular movement commands.
-                    GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.MoveManyToOnePoint], GameCommandSource.AnythingElse );
-
-                    // Let the game know where we want to move to.
-                    command.RelatedPoints.Add( mine.WorldLocation );
-
-                    // Have the command apply to our ship.
-                    command.RelatedEntityIDs.Add( ship.PrimaryKeyID );
-
-                    // Tell the game to apply our command.
-                    if ( command.RelatedPoints.Count > 0 )
-                        Context.QueueCommandForSendingAtEndOfContext( command );
+                    QueueMovementCommand( ship, mine.WorldLocation );
                 }
             }
         }
@@ -2772,8 +2709,7 @@ namespace SKCivilianIndustry
 
                     // Prepare a movement command to gather our ships around a wormhole.
                     GameEntity_Other wormhole = centerpiece.Planet.GetWormholeTo( assessment.Target );
-                    GameCommand wormholeCommand = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.MoveManyToOnePoint], GameCommandSource.AnythingElse );
-                    wormholeCommand.RelatedPoints.Add( wormhole.WorldLocation );
+
                     for ( int y = 0; y < militiaData.Ships.Count && !alreadyAttacking; y++ )
                     {
                         for ( int z = 0; z < militiaData.Ships[y].Count; z++ )
@@ -2809,7 +2745,7 @@ namespace SKCivilianIndustry
                                 // Create and add all required parts of a move to point command.
                                 if ( wormhole != null )
                                 {
-                                    wormholeCommand.RelatedEntityIDs.Add( entity.PrimaryKeyID );
+                                    QueueMovementCommand( entity, wormhole.WorldLocation );
                                 }
                             }
                             else
@@ -2817,8 +2753,6 @@ namespace SKCivilianIndustry
 
                         }
                     }
-                    if ( wormholeCommand.RelatedEntityIDs.Count > 0 && wormholeCommand.RelatedPoints.Count > 0 && !alreadyAttacking )
-                        Context.QueueCommandForSendingAtEndOfContext( wormholeCommand );
                 }
                 // If 33% all of our ships are ready, or we're already raiding, its raiding time.
                 if ( ready > notReady * 2 || alreadyAttacking )
@@ -2946,7 +2880,7 @@ namespace SKCivilianIndustry
                             // Current planet has threat we can't beat.
                             // current planet is more than 1 hop away from our centerpiece.
                             if ( entity.Planet.Index != centerpiece.Planet.Index && entity.LongRangePlanningData.FinalDestinationIndex != centerpiece.Planet.Index &&
-                                ( entity.Planet.GetHopsTo(centerpiece.Planet) > 1 || threat.Total <= 1000 || 
+                                (entity.Planet.GetHopsTo( centerpiece.Planet ) > 1 || threat.Total <= 1000 ||
                                 threat.MilitiaMobile + threat.MilitiaGuard + threat.FriendlyGuard + threat.FriendlyMobile < threat.Total * 1.25) )
                             {
                                 QueueWormholeCommand( entity, centerpiece.Planet );
@@ -3052,7 +2986,7 @@ namespace SKCivilianIndustry
         /// </summary>
         /// <param name="entity">The ship to move.</param>
         /// <param name="destination">The planet to move to.</param>
-        private void QueueWormholeCommand(GameEntity_Squad entity, Planet destination )
+        private void QueueWormholeCommand( GameEntity_Squad entity, Planet destination )
         {
             Planet origin = entity.Planet;
             if ( !wormholeCommands.GetHasKey( origin ) )
@@ -3081,7 +3015,7 @@ namespace SKCivilianIndustry
                     if ( entities == null )
                         continue;
                     List<Planet> path = faction.FindPath( origin, destination, Context );
-                    GameCommand command = GameCommand.Create( BaseGameCommand.CommandsByCode[BaseGameCommand.Code.SetWormholePath_NPCDirectedMob], GameCommandSource.AnythingElse );
+                    GameCommand command = GameCommand.Create( GameCommandTypeTable.Instance.GetRowByName( "SetWormholePath_CivilianIndustryBulk", false, null ), GameCommandSource.AnythingElse );
                     for ( int p = 0; p < path.Count; p++ )
                         command.RelatedIntegers.Add( path[p].Index );
                     for ( int z = 0; z < entities.Count; z++ )
@@ -3097,6 +3031,56 @@ namespace SKCivilianIndustry
             wormholeCommands = null;
         }
 
+        // A collection of every single movement command we want to execute.
+        ArcenSparseLookup<Planet, ArcenSparseLookup<ArcenPoint, List<GameEntity_Squad>>> movementCommands;
+
+        /// <summary>
+        /// Add an entity that needs a movement command.
+        /// </summary>
+        /// <param name="entity">The ship to move.</param>
+        /// <param name="destination">The point to move to.</param>
+        private void QueueMovementCommand( GameEntity_Squad entity, ArcenPoint destination )
+        {
+            Planet planet = entity.Planet;
+            if ( !movementCommands.GetHasKey( planet ) )
+                movementCommands.AddPair( planet, new ArcenSparseLookup<ArcenPoint, List<GameEntity_Squad>>() );
+            if ( !movementCommands[planet].GetHasKey( destination ) )
+                movementCommands[planet].AddPair( destination, new List<GameEntity_Squad>() );
+            movementCommands[planet][destination].Add( entity );
+        }
+
+        public void ExecuteMovementCommands( Faction faction, ArcenLongTermIntermittentPlanningContext Context )
+        {
+            for ( int x = 0; x < movementCommands.GetPairCount(); x++ )
+            {
+                ArcenSparseLookupPair<Planet, ArcenSparseLookup<ArcenPoint, List<GameEntity_Squad>>> planetPair = movementCommands.GetPairByIndex( x );
+                if ( planetPair == null )
+                    continue;
+                Planet planet = planetPair.Key;
+                ArcenSparseLookup<ArcenPoint, List<GameEntity_Squad>> destinations = planetPair.Value;
+                for ( int y = 0; y < destinations.GetPairCount(); y++ )
+                {
+                    ArcenSparseLookupPair<ArcenPoint, List<GameEntity_Squad>> destinationPair = destinations.GetPairByIndex( y );
+                    if ( destinationPair == null )
+                        continue;
+                    ArcenPoint destination = destinationPair.Key;
+                    List<GameEntity_Squad> entities = destinationPair.Value;
+                    if ( entities == null )
+                        continue;
+                    GameCommand command = GameCommand.Create( GameCommandTypeTable.Instance.GetRowByName( "MoveManyToOnePoint_CivilianIndustryBulk", false, null ), GameCommandSource.AnythingElse );
+                    command.RelatedPoints.Add( destination );
+                    for ( int z = 0; z < entities.Count; z++ )
+                    {
+                        GameEntity_Squad entity = entities[z];
+                        if ( entities != null && entity.LongRangePlanningData.DestinationPoint != destination )
+                            command.RelatedEntityIDs.Add( entity.PrimaryKeyID );
+                    }
+                    if ( command.RelatedEntityIDs.Count > 0 )
+                        Context.QueueCommandForSendingAtEndOfContext( command );
+                }
+            }
+        }
+
         // Do NOT directly change anything from this function. Doing so may cause desyncs in multiplayer.
         // What you can do from here is queue up game commands for units, and send them to be done via QueueCommandForSendingAtEndOfContext.
         public override void DoLongRangePlanning_OnBackgroundNonSimThread_Subclass( Faction faction, ArcenLongTermIntermittentPlanningContext Context )
@@ -3109,6 +3093,7 @@ namespace SKCivilianIndustry
 
             // Set up a list of all movement commands, and execute them once we're done.
             wormholeCommands = new ArcenSparseLookup<Planet, ArcenSparseLookup<Planet, List<GameEntity_Squad>>>();
+            movementCommands = new ArcenSparseLookup<Planet, ArcenSparseLookup<ArcenPoint, List<GameEntity_Squad>>>();
 
             CalculateThreat( faction, Context );
             DoTradeRequests( faction, Context );
@@ -3117,9 +3102,11 @@ namespace SKCivilianIndustry
             DoMilitiaThreatReaction( faction, Context );
             UpdateUnitCaps( faction, Context );
 
-            // Execute all of our wormhole commands.
+            // Execute all of our movement commands.
             if ( wormholeCommands.GetPairCount() > 0 )
-                ExecuteWormholeCommands(faction, Context);  
+                ExecuteWormholeCommands( faction, Context );
+            if ( movementCommands.GetPairCount() > 0 )
+                ExecuteMovementCommands( faction, Context );
         }
 
         // Check for our stuff dying.

@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\GameData\ModdableLogicDLLs\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -36,6 +36,9 @@
     <Reference Include="AIWarExternalCode, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\GameData\ModdableLogicDLLs\AIWarExternalCode.dll</HintPath>
+    </Reference>
+    <Reference Include="AIWarExternalVisualizationCode">
+      <HintPath>..\GameData\ModdableLogicDLLs\AIWarExternalVisualizationCode.dll</HintPath>
     </Reference>
     <Reference Include="ArcenAIW2Core, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -273,16 +276,17 @@
     <Compile Include="TradeStationDescriptionAppender.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="XMLFiles\SKCivilianIndustry\Balance_ShotSpeed\CivShotSpeed.xml" />
-    <Content Include="XMLFiles\SKCivilianIndustry\BuildSidebarCategory\SK_CivilianIndustry.xml" />
-    <Content Include="XMLFiles\SKCivilianIndustry\ExternalDataPattern\SK_CivilianIndustry.xml" />
-    <Content Include="XMLFiles\SKCivilianIndustry\GameEntity\SK_CivilianIndustry.xml" />
-    <Content Include="XMLFiles\SKCivilianIndustry\SpecialFaction\SK_CivilianIndustry.xml" />
+    <Content Include="XMLMods\SKCivilianIndustry\Balance_ShotSpeed\CivShotSpeed.xml" />
+    <Content Include="XMLMods\SKCivilianIndustry\BuildSidebarCategory\SK_CivilianIndustry.xml" />
+    <Content Include="XMLMods\SKCivilianIndustry\ExternalDataPattern\SK_CivilianIndustry.xml" />
+    <Content Include="XMLMods\SKCivilianIndustry\GameCommand\SK_CivilianIndustry.xml" />
+    <Content Include="XMLMods\SKCivilianIndustry\GameEntity\SK_CivilianIndustry.xml" />
+    <Content Include="XMLMods\SKCivilianIndustry\SpecialFaction\SK_CivilianIndustry.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>mkdir "$(ProjectDir)GameData\ModdableLogicDLLs"
+copy "$(TargetDir)SKCivilianIndustry.*" "$(ProjectDir)GameData\ModdableLogicDLLs"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

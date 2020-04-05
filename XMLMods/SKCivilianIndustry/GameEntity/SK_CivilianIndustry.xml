@@ -1,0 +1,726 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+    <!--    File contains stations and ships for the PlayerTrains faction.
+    -->
+  
+    <!--    Following units are core to the function of the mod.          
+    -->
+    <!--    The main station of our faction.
+            Auto builds on player homeworlds.
+            Builds Cargo Ships and Militia Construction Ships
+    -->
+    <entity name="GrandStation" display_name="Grand Station"
+            description="The central hub of trade. If this is destroyed, the civilian economy will crumble. Upgraded by Economic/Logistic Command and Engineering Tech."
+            tags="CivilianIndustryEntity,GrandStation,CargoShipProducer,ShowsOnNormalDisplayMode"
+            visuals="assets/_finalgamemeshes/humanbuildings/spacedock/spacedock.prefab"
+            gimbal_name="AstroTrainStation"
+            icon_name="Official/AstroTrainStation" gimbal_icon_size_multiplier="1.5"
+            category="Ship"
+            visuals_scale_multiplier="12" size_scale="12" y_offset_of_icon="30"
+            collision_priority="810"
+            behavior="Stationary"
+            starting_mark_level="Mark1"
+            cost_for_ai_to_purchase="90000"
+            hull_points="5000000" shield_points="100000" speed="Immobile"
+            armor_mm="250" albedo="0.8" mass_tx="4"
+            metal_cost="50000" energy_consumption="10000"
+            ship_or_structure_explosion_sfx="ShipLostMassive_Explosion"
+            ship_or_structure_explosion_if_on_other_planet_sfx="ShipLargeLostOnOtherPlanet_Explosion"
+            ship_or_structure_explosion_sfx_happens_if_not_mine_and_on_other_planet="true"
+            voice_group="Silent"
+            priority_as_frd_target="MajorPlanetLevelObjective"
+            priority_as_ai_target="MajorPlanetLevelObjective"
+            priority_to_protect="MajorPlanetLevelObjective"
+            exp_to_grant_on_death="-1"
+            tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,Engineering"
+    >
+    </entity>
+    <!--    Trade stations.
+            Auto builds on non homeworld planets.
+            Resources are always inported or exported through this station.
+    -->
+    <entity name="TradeStation" display_name="Trade Station"
+            description="The center of trade for this planet. Upgraded by Economic and Logistic Command and Metal Generation Tech."
+            tags="CivilianIndustryEntity,TradeStation,ShowsOnNormalDisplayMode"
+            visuals="assets/_finalgamemeshes/humanbuildings/spacedock/spacedock.prefab"
+            gimbal_name="AstroTrainStation"
+            icon_name="Official/AstroTrainStation" gimbal_icon_size_multiplier="1.5"
+            category="Ship"
+            visuals_scale_multiplier="7.5" size_scale="7.5" y_offset_of_icon="30"
+            collision_priority="810"
+            behavior="Stationary"
+            starting_mark_level="Mark1"
+            cost_for_ai_to_purchase="90000"
+            hull_points="150000" shield_points="25000" speed="Immobile"
+            armor_mm="250" albedo="0.8" mass_tx="4"
+            metal_cost="10000" energy_consumption="5000"
+            ship_or_structure_explosion_sfx="ShipLostMassive_Explosion"
+            ship_or_structure_explosion_if_on_other_planet_sfx="ShipLargeLostOnOtherPlanet_Explosion"
+            ship_or_structure_explosion_sfx_happens_if_not_mine_and_on_other_planet="true"
+            voice_group="Silent"
+            priority_as_frd_target="MajorPlanetLevelObjective"
+            priority_as_ai_target="MajorPlanetLevelObjective"
+            priority_to_protect="IgnoreMe"
+            exp_to_grant_on_death="-1"
+            tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,MetalGeneration"
+            description_appender_dll="SKCivilianIndustry"
+            description_appender_type="SKCivilianIndustry.TradeStationDescriptionAppender"
+    >
+    </entity>
+    <!--	Trade Posts
+                    Build by player-controlled Battlestations and Citadels
+                    Acts like partial-potency trade stations.
+    -->
+    <entity name="TradePost" display_name="Trade Post" copy_from="TradeStation" tags="CivilianIndustryEntity,TradePost"
+                build_sidebar_categories_i_am_part_of="MilitiaBuildings"
+                special_entity_type="NPCFactionCenterpiece"
+                description="A military funded trade post. Upgraded by Economic and Logistic Command and Metal Generation Tech."
+                hull_points="250000" shield_points="500000"
+                metal_cost="500000" energy_consumption="50000"
+                visuals_scale_multiplier="5" size_scale="5"
+                tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,MetalGeneration"
+    >
+        <metal_flow purpose="SelfConstruction" throughput="250"/>
+    </entity>
+    <!--    Cargo ship.
+            Used to transfer resources between trade stations and the grand station.
+    -->
+    <entity name="CargoShip" display_name="Cargo Ship" cannot_be_stacked="true"
+            description="A civilian trade ship. It is tasked with moving resources throughout your planets. Upgraded by Metal Generation and Light Tech."
+            tags="CivilianIndustryEntity,CargoShip,ShowsOnNormalDisplayMode"
+            visuals="assets/_finalgamemeshes/humanoddities/colonyship/colonyship.prefab"
+            icon_name="Official/ColonyShip"
+            gimbal_icon_size_multiplier="0.75"
+            size_scale="1"
+            visuals_scale_multiplier="1"
+            category="Ship"
+            y_offset_of_icon="10"
+            collision_priority="900"
+            starting_mark_level="Mark1"
+            cost_for_ai_to_purchase="90000"
+            hull_points="50000" shield_points="0" speed="Normal1"
+            metal_cost="5000" energy_consumption="0"
+            armor_mm="300" engine_gx="22" albedo="0.8" mass_tx="33"
+            voice_group="Starship"
+            ship_or_structure_explosion_sfx="ShipStarship_Explosion"
+            strength_multiplier="0"
+            ship_or_structure_explosion_if_on_other_planet_sfx="ShipLargeLostOnOtherPlanet_Explosion"
+            ship_or_structure_explosion_sfx_happens_if_not_mine_and_on_other_planet="true"
+            priority_as_ai_target="MinorResourceGeneration"
+            priority_as_frd_target="MinorResourceGeneration"
+            priority_to_protect="IgnoreMe"
+            exp_to_grant_on_death="-1"
+            tech_upgrades_that_benefit_me="MetalGeneration,Light"
+            description_appender_dll="SKCivilianIndustry"
+            description_appender_type="SKCivilianIndustry.CargoShipDescriptionAppender"
+    >
+    </entity>
+    <!--    Militia Construction Ship.
+            Spawnt in response to hostlie threat.
+            Deploys into Outposts and Patrol Posts.
+    -->
+    <entity name="MilitiaConstructionShip" display_name="Militia Construction Ship" skip_export="true" copy_from="AssaultFrigate" tags="MilitiaShip,MilitiaConstructionShip,CivilianIndustryEntity"
+            hull_points="500000" shield_points="100000" speed="BelowAverage1" cannot_be_stacked="true"
+            description="A militia ship, it is carrying materials required to construct a defensive building. Upgraded by Engineering and Medium Tech."
+            description_appender_dll="SKCivilianIndustry"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
+            tech_upgrades_that_benefit_me="Engineering,Medium"
+    >
+        <system name="FusionBomb" range="Small5" max_mark_level_to_function="0" />
+        <system name="BallisticCannon" range="Small5" max_mark_level_to_function="0" />
+    </entity>
+    <!--    Miltia outpost.
+            Built to fortify planets from hostile wormholes.
+    -->
+    <entity name="MilitiaOutpost" display_name="Militia Outpost" skip_export="true" copy_from="AIFortress" tags="MilitiaShip,MilitiaOutpost,CivilianIndustryEntity"
+            hull_points="500000" shield_points="1250000"
+            damage_multiplier_to_all_weapons="0.33"
+            strength_multiplier="0.33"
+            description="The centerpiece of a Militia Fleet. This has been built in response to ai threat on adjacent planets. Requests resources to build stationary defenses. Upgraded by Citadel and Military Command technology."
+            description_appender_dll="SKCivilianIndustry"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
+            tech_upgrades_that_benefit_me="Citadels,CommandMilitary">
+
+    </entity>
+    <!--    Militia Patrol Post
+            Built around mines on planets that still feel threatened after outpost placement.
+            Builds mobile fleets.
+    -->
+    <entity name="MilitiaPatrolPost" display_name="Militia Patrol Post" skip_export="true" copy_from="StealthGuardPost" tags="MilitiaShip,MilitiaPatrolPost,CivilianIndustryEntity"
+            hull_points="250000" shield_points="750000"
+            strength_multiplier="0.33"
+            description="The centerpiece of a Militia Fleet. This has been built in response to ai threat on adjacent planets. Requests resources to build mobile forces. Upgraded by Citadel and Sentries Tech."
+            description_appender_dll="SKCivilianIndustry"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
+            tech_upgrades_that_benefit_me="Citadels,Sentries">
+    </entity>
+	<!--	Advanced Militia Shipyards
+			Built around trade stations after all outposts and patrol posts have been built.
+			Requests large amounts of resources to build powerful Protector ships.
+	-->
+	<entity name="AdvancedCivilianShipyard" display_name="Advanced Civilian Shipyard"
+            description="Requests resources in order to build powerful Protector ships. Must be kept alive in order for Protector ships to function."
+            tags="CivilianIndustryEntity,AdvancedCivilianShipyard,BuildsProtectors,ShowsOnNormalDisplayMode"
+            visuals="assets/_finalgamemeshes/humanbuildings/spacedock/spacedock.prefab"
+			icon_name="Official/SpaceDock" gimbal_icon_size_multiplier="1.5"
+            category="Ship"
+            visuals_scale_multiplier="7.5" size_scale="7.5" y_offset_of_icon="30"
+            collision_priority="810"
+            behavior="Stationary"
+            starting_mark_level="Markless"
+            cost_for_ai_to_purchase="90000"
+            hull_points="150000" shield_points="25000" speed="Immobile"
+            armor_mm="250" albedo="0.8" mass_tx="4"
+            metal_cost="10000" energy_consumption="5000"
+            ship_or_structure_explosion_sfx="ShipLostMassive_Explosion"
+            ship_or_structure_explosion_if_on_other_planet_sfx="ShipLargeLostOnOtherPlanet_Explosion"
+            ship_or_structure_explosion_sfx_happens_if_not_mine_and_on_other_planet="true"
+            voice_group="Silent"
+            priority_as_frd_target="MajorPlanetLevelObjective"
+            priority_as_ai_target="MajorPlanetLevelObjective"
+            priority_to_protect="IgnoreMe"
+            exp_to_grant_on_death="-1"
+            tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,MetalGeneration"
+            description_appender_dll="SKCivilianIndustry"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
+    >
+    </entity>
+    <!--    Militia Headquarters
+            Built by player controlled Battlestations and Citadels
+            Builds mobile fleets.
+    -->
+    <entity name="MilitiaHeadquarters" display_name="Militia Headquarters" skip_export="true" copy_from="ShieldGuardPost" tags="MilitiaShip,MilitiaHeadquarters,CivilianIndustryEntity"
+            hull_points="500000" shield_points="1250000" metal_cost="1000000" energy_consumption="100000"
+            strength_multiplier="0.33" shield_size_scale="5"
+            description="The centerpiece of a large Militia Fleet, funded by the Military. Requests resources to build mobile forces to support the Battlestation or Citadel that built it. Upgraded by Citadels and Forcefields Tech."
+            special_entity_type="NPCFactionCenterpiece"
+            build_sidebar_categories_i_am_part_of="MilitiaBuildings"
+            description_appender_dll="SKCivilianIndustry"
+            description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
+            tech_upgrades_that_benefit_me="Citadels,Forcefields">
+        <metal_flow purpose="SelfConstruction" throughput="250"/>
+    </entity>
+	<!--	Militia Protector Shipyards
+			Built by player controlled Battlestations and Citadels
+			Builds powerful Protector ships for the Battlestation
+	-->
+	<entity	name="MilitiaProtectorShipyards" display_name="Militia Protector Shipyards" skip_export="true" copy_from="MilitiaHeadquarters"
+			tags="MilitiaShip,MilitiaProtectorShipyards,BuildsProtectors,CivilianIndustryEntity"
+			metal_cost="3000000" energy_consumption="150000"
+			description="The centerpiece of a powerful Militia Fleet, funded by the Military. Requests a large amount of resources to build powerful Protector ships to support the Battlestation or Citadel that built it. Upgraded by Citadels and Forcefields Tech."
+			special_entity_type="NPCFactionCenterpiece"
+      build_sidebar_categories_i_am_part_of="MilitiaBuildings"
+      description_appender_dll="SKCivilianIndustry"
+      description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
+      tech_upgrades_that_benefit_me="Citadels,Forcefields"
+      absolute_max_cap_when_in_fleets="1">
+			<metal_flow purpose="SelfConstruction" throughput="250"/>
+	</entity>
+    <!--    Militia Barracks
+            Manually placed by the player.
+            Default 1 per planet, boosts the capacity of all turret/ship building militia buildings on the planet by 33%
+    -->
+    <entity name="MilitiaBarracks" display_name="Militia Barracks" skip_export="true" copy_from="TradeStation" tags="MilitiaShip,MilitiaBarracks,CivilianIndustryEntity"
+            special_entity_type="NPCFactionCenterpiece"
+            visuals="assets/_finalgamemeshes/humanbuildings/spacedock/spacedock.prefab"
+            build_sidebar_categories_i_am_part_of="MilitiaBuildings"
+            description="A focal point for local defensive forces for the region. Boosts Turret and Ship capacity for Militia buildings on this and adjacent planets by 33% or a flat 1, whichever is greater."
+            metal_cost="5000000" energy_consumption="100000"
+    >
+        <metal_flow purpose="SelfConstruction" throughput="250"/>
+    </entity>
+    <!--    Ships and turrets spawnt by the militia part of the faction.
+    -->
+    <entity name="CivSniper" display_name="Civilian Sniper" skip_export="true" copy_from="Sniper"
+            tags="CivAmbushMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivRaptor" display_name="Civilian Raptor" skip_export="true" copy_from="Raptor"
+            tags="CivAmbushMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivAmbushTurret" display_name="Civilian Ambush Turret" skip_export="true" copy_from="AmbushTurret"
+            tags="CivAmbushTurret,CivTurret"
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+    </entity>
+    <entity name="CrackerJack" display_name="Cracker Jack Protector" skip_export="true" copy_from="RaidFrigate"
+                tags="CivAmbushProtector,CivProtector"
+				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
+                description="A potent Protector, built using advanced Ambush technology. This ship is an expert at taking down any forces that have recently arrived on its planet."
+                hull_points="1000000" shield_points="500000"
+                tech_upgrades_that_benefit_me="Ambush,Medium"
+				multiplier_to_all_scales="4"
+    >
+        <system name="FusionBolt" display_name="Crackerjack Bolt"
+                        category="Weapon" firing_timing="OnlyInRange" shots_per_salvo="3"
+                        damage_per_shot="5000" range="Normal3" shot_speed="Fast" rate_of_fire="High" fires_salvos_sequentially="true"
+                        shot_type_data="FusionBolt"
+                        base_percent_damage_bypasses_personal_shields="0.9"
+        >
+          <outgoing_damage_modifier based_on="TargetTimeAtPlanet" comparison_type="LessThan" compared_to="60" multiplier="5" />
+        </system>
+    </entity>
+    
+    <entity name="CivConcussionCorvette" display_name="Civilian Concussion Corvette" skip_export="true" copy_from="ConcussionCorvette"
+            tags="CivConcussionMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivSiegeFrigate" display_name="Civilian Siege Frigate" skip_export="true" copy_from="SiegeFrigate"
+            tags="CivConcussionMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivConcussionTurret" display_name="Civilian Concussion Turret" skip_export="true" copy_from="ConcussionTurret"
+            tags="CivConcussionTurret,CivTurret"
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+    </entity>
+    <entity name="Thunderstrike" display_name="Thunderstrike Protector" skip_export="true" copy_from="SiegeFrigate"
+                tags="CivConcussionProtector,CivProtector"
+				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
+                description="A potent Protector, built using advanced Concussion technology. This ship is an expert at dividing enemy forces with a powerful aoe knockback effect."
+                hull_points="1000000" shield_points="500000"
+                tech_upgrades_that_benefit_me="Concussion,Light"
+				multiplier_to_all_scales="2"
+    >
+        <system name="PlasmaTorpedo" display_name="Thunderstrike Torpedo"
+                        category="Weapon" firing_timing="OnlyInRange"
+                        damage_per_shot="24000" range="AboveAverage3" shot_speed="Slow" rate_of_fire="Misery" fires_salvos_sequentially="true"
+                        shot_type_data="PlasmaTorpedoAOEBurstAtEnd"
+                        area_of_effect_size="2000"
+                        base_knockback_per_shot="5000" added_knockback_per_shot_per_mark="500" knockback_to_ships_mass_tx_less_than="5"
+                        aoe_spreads_damage_among_available_targets="true"
+        >
+        </system>
+    </entity>
+
+    <entity name="CivPikeCorvette" display_name="Civilian Pike Corvette" skip_export="true" copy_from="PikeCorvette"
+            tags="CivDisruptiveMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivAgravicPod" display_name="Civilian Agravic Pod" skip_export="true" copy_from="AgravicPod"
+            tags="CivDisruptiveMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivPikeTurret" display_name="Civilian Pike Turret" skip_export="true" copy_from="PikeTurret"
+            tags="CivDisruptiveTurret,CivTurret"
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+    </entity>
+    <entity name="Paladin" display_name="Paladin Protector" skip_export="true" copy_from="ForcefieldFrigate"
+                tags="CivDisruptiveProtector,CivProtector"
+				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
+                description="A potent Protector, built using advanced Disruptive technology. This ship is the ultimate in protecting its allies with powerful debuffs, a potent forcefield, and self healing."
+                hull_points="500000" shield_points="1000000" shield_size_scale="6" my_forcefield_does_not_shrink="true"
+                health_change_per_damage_dealt="5"
+                tech_upgrades_that_benefit_me="Disruptive,Heavy"
+				multiplier_to_all_scales="2"
+    >
+        <system name="BallisticCannon" damage_per_shot="40" rate_of_fire="Devourer" shots_per_salvo="16" range="AboveAverage3" fires_salvos_sequentially="true" display_name="Siphon Suppression Gatling"
+                base_enemy_weapon_reload_slowing_seconds_per_shot="2" added_enemy_weapon_reload_slowing_seconds_per_shot_per_mark="1" enemy_weapon_reload_slowing_to_armor_mm_less_than="80" max_enemy_weapon_reload_slowing_seconds="10" added_target_evaluator="WeaponJamAsPrimary"/>	
+        <system name="TractorBeam" display_name="Tractor Beam"
+                category="Passive"
+                tractor_range="AboveAverage1" tractor_count="50" tractor_count_added_per_mark="10" tractor_hits_albedo_less_than="0.5" tractor_hits_engine_gx_less_than="14"/>
+    </entity>
+
+    <entity name="CivPulsarTank" display_name="Civilian Pulsar Tank" skip_export="true" copy_from="PulsarTank"
+            tags="CivFusionMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivAssaultFrigate" display_name="Civilian Assault Frigate" skip_export="true" copy_from="AssaultFrigate"
+            tags="CivFusionMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivMLRSTurret" display_name="Civilian MLRS Turret" skip_export="true" copy_from="MLRSTurret"
+            tags="CivFusionTurret,CivTurret"
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+    </entity>
+    <entity name="BrickBreaker" display_name="Brick Breaker Protector" skip_export="true" copy_from="AssaultFrigate"
+                tags="CivFusionProtector,CivProtector"
+				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
+                description="A potent Protector, built using advanced Fusion technology. This ship is an expert at taking down large hostiles."
+                hull_points="1000000" shield_points="500000"
+                tech_upgrades_that_benefit_me="Fusion,Heavy"
+				multiplier_to_all_scales="2"
+    >
+        <system name="FusionBomb" display_name="Brick Bomb"
+                category="Weapon" firing_timing="OnlyInRange"
+                damage_per_shot="1000" range="VeryTiny1" shot_speed="Normal" rate_of_fire="Devourer" fires_salvos_sequentially="true"
+                shot_type_data="FusionBomb"	
+                base_percent_damage_bypasses_personal_shields="0"
+        >
+            <outgoing_damage_modifier based_on="Armor_mm" comparison_type="AtLeast" compared_to="90" multiplier="5" />
+            <outgoing_damage_modifier based_on="mass_tx" comparison_type="AtLeast" compared_to="5" multiplier="5" />
+            <outgoing_damage_modifier based_on="Albedo" comparison_type="AtLeast" compared_to="0.7" multiplier="5" />
+        </system>
+    </entity>
+    
+    <entity name="CivVWing" display_name="Civilian V-Wing" skip_export="true" copy_from="VWing"
+            tags="CivGeneralistMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivAutocannonMinipod" display_name="Civilian Autocannon Minipod" skip_export="true" copy_from="AutocannonMinipod"
+            tags="CivGeneralistMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivTritiumSniperTurret" display_name="Civilian Tritium Sniper Turret" skip_export="true" copy_from="TritiumSniperTurret"
+            tags="CivGeneralistTurret,CivTurret"
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+    </entity>
+	<entity name="Hurricane" display_name="Hurricane Protector" skip_export="true" copy_from="TritiumSniperFrigate"
+                tags="CivGeneralistProtector,CivProtector"
+				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
+                description="A potent Protector, built using advanced Generalist technology. This ship provides a large radius gravity generator and powerful rapid fire sniper shots."
+                hull_points="1000000" shield_points="500000"
+                tech_upgrades_that_benefit_me="Generalist,Light"
+				multiplier_to_all_scales="2"
+    >
+	<system name="TritiumRailcannon" display_name="Hurricane Railcannon"
+				category="Weapon" firing_timing="OnlyInRange"
+				damage_per_shot="800" range="EssentiallyInfinite" shot_speed="VeryFast" rate_of_fire="Misery"
+				shots_per_salvo="8" fires_salvos_sequentially="false"
+				shot_type_data="ExtremeLongRangeRailgun"				
+				>
+    </system>
+	<system name="GraviticCore" display_name="Storm Core"
+				category="Passive"
+				base_gravity_speed_multiplier="0.81" subtracted_gravity_speed_multiplier_per_mark="0.01" gravity_hits_engine_gx_less_than="14" gravity_range="ExtremelyHigh"
+				>
+    </system>
+    </entity>
+    
+    <entity name="CivVampireClaw" display_name="Civilian Vampire Claw" skip_export="true" copy_from="VampireClaw"
+            tags="CivMeleeMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivMetabolizingGangsaw" display_name="Civilian Metabolizing Gangsaw" skip_export="true" copy_from="MetabolizingGangsaw"
+            tags="CivMeleeMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivKineticSpikeTurret" display_name="Civilian Kinetic Spike Turret" skip_export="true" copy_from="EnsnarerFortifiedTeslaTurret"
+            tags="CivMeleeTurret,CivTurret"
+            description="An extremely simplistic turret, it comes with a single tractor beam and a kinetic spike shot that pierces all shields."
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+      <system name="TeslaCoil" max_mark_level_to_function="0"></system>
+      <system name="Spike" display_name="Kinetic Spike"
+				  category="Weapon" firing_timing="OnlyInRange"
+				  damage_per_shot="1200" range="Normal2" shot_speed="Normal" rate_of_fire="Misery" fires_salvos_sequentially="true"
+				  shot_type_data="ArmorPiercingShell"	
+				  base_percent_damage_bypasses_personal_shields="1"
+				  >
+          <outgoing_damage_modifier based_on="Armor_mm" comparison_type="AtLeast" compared_to="90" multiplier="3" />
+      </system>
+      <system name="TractorBeam" tractor_count="1" tractor_count_added_per_mark="0" tractor_hits_albedo_less_than="0.5" tractor_hits_engine_gx_less_than="10"
+				>
+      </system>
+    </entity>
+	<entity name="Excalibur" display_name="Excalibur Protector" skip_export="true" copy_from="VampireClaw"
+                tags="CivMeleeProtector,CivProtector"
+				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
+                description="A potent Protector, built using advanced Melee technology. This ship is a slow moving and durable ship that can tractor an incredible number of enemy targets."
+                hull_points="1000000" shield_points="500000"
+                tech_upgrades_that_benefit_me="Melee,Heavy"
+				health_change_per_damage_dealt="0" is_strikecraft="false" speed="BelowAverage1"
+				multiplier_to_all_scales="15" multiplier_to_all_costs="100"
+    >
+	<system name="Melee" display_name="Ranged Blade"
+				category="Weapon" firing_timing="OnlyInRange"
+				damage_per_shot="1500" shots_per_salvo="50" range="Tiny1" shot_speed="Fast" rate_of_fire="SlightlyLow" fires_salvos_sequentially="false"
+				shot_type_data="MeleeInvisible" added_target_evaluator="Melee"
+				>
+    </system>
+	<system name="Cloaker" display_name="Cloaking Device" max_mark_level_to_function="0" >
+    </system>
+	<system name="TractorBeam" display_name="Tractor Blade"
+				category="Passive"
+				tractor_range="VeryTiny1" tractor_count="150" tractor_count_added_per_mark="30" tractor_hits_albedo_less_than="0.5" tractor_hits_engine_gx_less_than="18"
+				>
+    </system>
+	<incoming_damage_modifier based_on="AttackDistance" comparison_type="GreaterThan" compared_to="500" multiplier="0.05" />
+    </entity>
+    
+    <entity name="CivRaider" display_name="Civilian Raider" skip_export="true" copy_from="Raider"
+            tags="CivRaidMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivRaidFrigate" display_name="Civilian Raid Frigate" skip_export="true" copy_from="RaidFrigate"
+            tags="CivRaidMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivBlitzCannonTurret" display_name="Civilian Blitz Cannon Turret" skip_export="true" copy_from="TritiumSniperTurret"
+            tags="CivRaidTurret,CivTurret"
+            description="Hammers away at the hull of healthy ships from any range."
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+      <system name="TritiumRailcannon" max_mark_level_to_function="0"></system>
+      <system name="BlitzCannon" display_name="Blitz Cannon"
+				  category="Weapon" firing_timing="OnlyInRange"
+				  damage_per_shot="125" range="EssentiallyInfinite" shot_speed="VeryFast" rate_of_fire="Normal" fires_salvos_sequentially="true"
+				  shot_type_data="ExtremeLongRangeRailgun" cloaking_percent_loss_from_firing="0.1" base_percent_damage_bypasses_personal_shields="0.5"
+				  >
+          <outgoing_damage_modifier based_on="CurrentHullPercentage" applies_to="HullOnly" comparison_type="AtLeast" compared_to="75" multiplier="5" />
+      </system>
+    </entity>
+	<entity name="GrimReaper" display_name="Grim Reaper Protector" skip_export="true" copy_from="RaidFrigate"
+                tags="CivRaidProtector,CivProtector"
+				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
+                description="A potent Protector, built using advanced Raid technology. This ship is excellent at taking down weaker ships to fuel its rampage."
+                hull_points="1000000" shield_points="500000"
+                tech_upgrades_that_benefit_me="Raid,Medium"
+				health_change_per_damage_dealt="5"
+				multiplier_to_all_scales="4"
+    >
+	<system name="FusionBolt" display_name="Reaper Bolt"
+				category="Weapon" firing_timing="OnlyInRange"
+				damage_per_shot="500" range="Normal3" shots_per_salvo="5" shot_speed="Fast" rate_of_fire="Devourer" fires_salvos_sequentially="false"
+				shot_type_data="FusionBolt"
+				base_percent_damage_bypasses_personal_shields="0.9"
+				>
+				<outgoing_damage_modifier based_on="Armor_mm" comparison_type="AtMost" compared_to="50" multiplier="5" />
+				<outgoing_damage_modifier based_on="mass_tx" comparison_type="AtMost" compared_to="2" multiplier="5" />
+				<outgoing_damage_modifier based_on="Albedo" comparison_type="AtMost" compared_to="0.3" multiplier="5" />
+    </system>
+    </entity>
+    
+    <entity name="CivInhibitingTeslaCorvette" display_name="Civilian Inhibiting Tesla Corvette" skip_export="true" copy_from="InhibitingTeslaCorvette"
+            tags="CivSplashMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivGrenadeLauncherCorvette" display_name="Civilian Grenade Launcher Corvette" skip_export="true" copy_from="GrenadeLauncherCorvette"
+            tags="CivSplashMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivFortifiedTeslaTurret" display_name="Civilian Fortified Tesla Turret" skip_export="true" copy_from="FortifiedTeslaTurret"
+            tags="CivSplashTurret,CivTurret"
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+    </entity>
+	<entity name="Wildfire" display_name="Wildfire Protector" skip_export="true" copy_from="GrenadeLauncherCorvette"
+                tags="CivSplashProtector,CivProtector"
+				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
+                description="A potent Protector, built using advanced Splash technology. This ship fires off multiple types of slow moving grenades at hostile forces."
+                hull_points="1000000" shield_points="500000"
+                tech_upgrades_that_benefit_me="Splash,Light"
+				is_strikecraft="false" multiplier_to_all_scales="6" multiplier_to_all_costs="100"
+    >
+	<system name="Grenade" display_name="Flak Grenade"
+				category="Weapon" firing_timing="OnlyInRange"
+				damage_per_shot="800" range="EssentiallyInfinite" shot_speed="Grenade" rate_of_fire="ExtremelyLow" fires_salvos_sequentially="true"
+				shot_type_data="FlakShotAOEBurstAtEnd" shots_per_salvo="8"
+				area_of_effect_size="3200"
+				stack_damage_multiplier="2"
+				maximum_number_of_targets_hit_per_shot="9"
+				>
+				<outgoing_damage_modifier based_on="Armor_mm" comparison_type="AtMost" compared_to="50" multiplier="5" />
+    </system>
+	<system name="Grenade2" display_name="Lightning Grenade"
+				category="Weapon" firing_timing="OnlyInRange"
+				damage_per_shot="800" range="EssentiallyInfinite" shot_speed="Grenade" rate_of_fire="ExtremelyLow" fires_salvos_sequentially="true"
+				shot_type_data="LightningExplosionAOEShot" shots_per_salvo="8"
+				added_target_evaluator="WeaponJamAsPrimary"
+				area_of_effect_size="3200"				
+				maximum_number_of_targets_hit_per_shot="9"
+				stack_damage_multiplier="2"
+			base_enemy_weapon_reload_slowing_seconds_per_shot="2" added_enemy_weapon_reload_slowing_seconds_per_shot_per_mark="1"
+			max_enemy_weapon_reload_slowing_seconds="12"
+			enemy_weapon_reload_slowing_to_armor_mm_less_than="50"
+				>
+				<outgoing_damage_modifier based_on="Armor_mm" comparison_type="AtLeast" compared_to="50" multiplier="5" />
+    </system>
+    </entity>
+
+    <entity name="CivSpider" display_name="Civilian Spider" skip_export="true" copy_from="Spider"
+            tags="CivSubterfugeMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivWarbirdFrigate" display_name="Civilian Warbird Frigate" skip_export="true" copy_from="WarbirdFrigate"
+            tags="CivSubterfugeMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+      <system name="ParalysisBolt" shots_per_salvo="4" damage_per_shot="2240"></system>
+    </entity>
+    <entity name="CivSpiderTurret" display_name="Civilian Spider Turret" skip_export="true" copy_from="SpiderTurret"
+            tags="CivSubterfugeTurret,CivTurret"
+            multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+            damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+            multiplier_to_all_scales="2"
+    >
+    </entity>
+	<entity name="Tangler" display_name="Tangler Protector" skip_export="true" copy_from="WarbirdFrigate"
+                tags="CivSubterfugeProtector,CivProtector"
+				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
+                description="A potent Protector, built using advanced Subterfuge technology. This ship is capable of rapidly vaporizing fast moving ships and paralyzing the rest."
+                hull_points="1000000" shield_points="500000"
+                tech_upgrades_that_benefit_me="Subterfuge,Light"
+				multiplier_to_all_scales="2"
+    >
+	<system name="Railcannon" display_name="Vine Piercer"
+				category="Weapon" firing_timing="OnlyInRange"
+				damage_per_shot="800" range="Normal4" shot_speed="VeryFast" rate_of_fire="Misery"
+				shots_per_salvo="16" added_shots_per_salvo_per_mark="6" fires_salvos_sequentially="false"				
+				shot_type_data="ParalysisProngedShot_Blue"				
+				>
+		<outgoing_damage_modifier based_on="CurrentSpeedIfMoving" comparison_type="AtLeast" compared_to="1000" multiplier="10" />
+    </system>
+	<system name="ParalysisBolt" display_name="Vine Sprayer"
+				category="Weapon" firing_timing="OnlyInRange"
+				damage_per_shot="600" range="Normal4" shot_speed="Normal" rate_of_fire="Normal"
+				shots_per_salvo="16" fires_salvos_sequentially="false"
+				shot_type_data="ParalysisProngedShot_Blue" added_target_evaluator="ParalyzerAsPrimary"
+				base_paralysis_seconds_per_shot="4" paralysis_to_ships_mass_tx_less_than="3" cloaking_percent_loss_from_firing="0.2"
+				>
+    </system>
+    </entity>
+    
+    <entity name="CivSentinelGunboat" display_name="Civilian Sentinel Gunboat" skip_export="true" copy_from="SentinelGunboat"
+            tags="CivTechnologistMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivEtherjet" display_name="Civilian Etherjet" skip_export="true" copy_from="Etherjet"
+            tags="CivTechnologistMobile,CivMobile"
+            multiplier_to_all_costs="0.5" multiplier_to_all_healths="0.5" 
+            damage_multiplier_to_all_weapons="0.5" multiplier_to_all_fleet_caps="2" 
+            multiplier_to_all_scales="0.5"
+    >
+    </entity>
+    <entity name="CivTechnoBabbleTurret" display_name="Civilian Techno Babble Turret" skip_export="true" copy_from="PikeTurret"
+              tags="CivTechnologistTurret,CivTurret"
+              description="Provides mid-ranged tachyon and a Plinker Cannon to offer some offensive use."
+              multiplier_to_all_costs="2" multiplier_to_all_healths="2" 
+              damage_multiplier_to_all_weapons="2" multiplier_to_all_fleet_caps="0.5" 
+              multiplier_to_all_scales="2"
+      >
+      <system name="Petard" max_mark_level_to_function="0"></system>
+      <system name="Plink" display_name="Plinker Cannon"
+				category="Weapon" firing_timing="OnlyInRange"
+				damage_per_shot="350" range="AboveAverage3" shot_speed="Normal" rate_of_fire="High" fires_salvos_sequentially="true"
+				shot_type_data="PikeShot_Gold" cloaking_percent_loss_from_firing="0.1"
+				>
+      </system>
+      <system name="TachyonArray" display_name="Tachyon Array"
+				category="Passive"
+				tachyon_points="50" tachyon_points_added_per_mark="25" tachyon_range="AboveAverage3" tachyon_hits_albedo_less_than="0.75"
+				>
+      </system>
+    </entity>
+	<entity name="Orchestrator" display_name="Orchestrator Protector" skip_export="true" copy_from="CarrierGuardian"
+                tags="CivTechnologistProtector,CivProtector"
+				should_never_be_captured_by_another_faction="true" armor_mm="180" albedo="0.6" engine_gx="25" mass_tx="25"	
+                description="A potent Protector, built using advanced Technologist technology. This ship spawns decoy drones, speeds up allied ships on its planet, and grants planet-wide tachyeon coverage."
+                hull_points="1000000" shield_points="500000"
+                tech_upgrades_that_benefit_me="Technologist,Medium"
+				fleet_design_template_i_use_for_drones="DecoyDrones"
+				drone_starting_behavior_type="Attacker_Full"	
+				allied_speed_multiplier="1.2"
+				allied_speed_multiplier_added_per_mark="0.05"
+				multiplier_to_all_scales="3"
+    >
+	<system name="TachyonArray" display_name="Orchestration Array"
+	    category="Passive" tachyon_points="100" tachyon_points_added_per_mark="50" 
+		tachyon_range="EssentiallyInfinite" tachyon_hits_albedo_less_than="0.75"></system>
+    </entity>
+
+    <!--  AI Raiding Wormhole
+          Spawnt on planets before raiding; units will spawn from these and attempt to destroy cargo ships.
+    -->
+    <entity name="AIRaidingWormhole"
+            tags="AIRaidingWormhole"
+            icon_name="Official/Wormhole"
+            visuals="Assets/_FinalGameMeshes/AIBuildings/ExoGalacticWormhole.prefab"
+            display_name="AI Raiding Wormhole"
+            description="The AI is preparing to warp in small waves of raiding ships to cripple trade in the surrounding systems."
+            category="Ship"
+            size_scale="7.2"
+            visuals_scale_multiplier="8"
+            gimbal_name_extra_offset_y="12" gimbal_name_text_size="1.2"
+            voice_group="Silent"
+            starting_mark_level="Markless"
+            target_type_for_player="NeverTarget"
+            skip_drawing_ship_cap="true"
+            cost_for_ai_to_purchase="200"
+            hull_points="8000" shield_points="40000" speed="Immobile"
+            metal_cost="0" energy_consumption="100"
+            armor_mm="70" albedo="0.45" mass_tx="0.3"
+            immune_to_all_damage="true"
+            ship_or_structure_explosion_sfx="StructureMidsize_Explosion"
+            ship_or_structure_explosion_if_on_other_planet_sfx="StructureLostOnOtherPlanet_Explosion"
+            ship_or_structure_explosion_sfx_happens_if_not_mine_and_on_other_planet="true"
+            exp_to_grant_on_death="-1"
+            priority_as_ai_target="BigThreateningWeapon" priority_as_frd_target="NotDangerous" priority_to_protect="BigFavoriteToy"
+    />
+</root>
