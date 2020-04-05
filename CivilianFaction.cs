@@ -125,18 +125,18 @@ namespace SKCivilianIndustry
 
         /// <summary>
         /// Returns the ship/turret capacity. Increases based on intensity and trade station count.
-        /// 20 + intensity * 8 + (((5 * StationCount) ^ 0.9) ^ (1.25 + (0.025 * Intensity)))
+        /// 20 + intensity * 3 + (((5 * StationCount) ^ 0.9) ^ (1.25 + (0.025 * Intensity)))
         /// </summary>
         /// <returns></returns>
         public int GetCap( Faction faction )
         {
             int baseCap = 20;
             int intensity = faction.Ex_MinorFactionCommon_GetPrimitives().Intensity;
-            int flatIntensityBonus = 8 * intensity;
+            int flatBonus = 3 * intensity;
             double intensityMult = 1.25 + (0.025 * intensity);
             double stationMult = Math.Pow(5.0 * TradeStations.Count, 0.9);
-            double bonus = Math.Pow(stationMult, intensityMult);
-            int cap = (int)(Math.Ceiling( baseCap + flatIntensityBonus + bonus ));
+            double scalingBonus = Math.Pow(stationMult, intensityMult);
+            int cap = (int)(Math.Ceiling( baseCap + flatBonus + scalingBonus ));
             return cap;
         }
 

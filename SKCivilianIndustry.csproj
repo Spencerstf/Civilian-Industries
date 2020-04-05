@@ -275,6 +275,7 @@
     <Compile Include="TradeStationDescriptionAppender.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="XMLMods\SKCivilianIndustry\AIWar2GalaxySetting\SK_CivilianIndustry.xml" />
     <Content Include="XMLMods\SKCivilianIndustry\Balance_ShotSpeed\CivShotSpeed.xml" />
     <Content Include="XMLMods\SKCivilianIndustry\BuildSidebarCategory\SK_CivilianIndustry.xml" />
     <Content Include="XMLMods\SKCivilianIndustry\ExternalDataPattern\SK_CivilianIndustry.xml" />

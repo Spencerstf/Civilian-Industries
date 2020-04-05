@@ -26,7 +26,13 @@ namespace SKCivilianIndustry
         protected ArcenSparseLookup<Planet, int> LastGameSecondForMessageAboutThisPlanet;
         protected ArcenSparseLookup<Planet, int> LastGameSecondForLastTachyonBurstOnThisPlanet;
 
+        // General data used by the faction. Not required, but makes referencing it much easier.
         public CivilianFaction factionData;
+
+        // Constants and/or game settings.
+        protected static int MinimumOutpostDeploymentRange;
+        protected static double MilitiaAttackOverkillPercentage;
+        protected static int SecondsBetweenMilitiaUpgrades;
 
         // Note: We clear all variables on the faction in the constructor.
         // This is the (current) best way to make sure data is not carried between saves, especially statics.
@@ -1033,7 +1039,7 @@ namespace SKCivilianIndustry
                         return DelReturn.Continue;
 
                     // Skip if too close to the post
-                    if ( foundTradePost.WorldLocation.GetDistanceTo( wormhole.WorldLocation, true ) <= 6000 )
+                    if ( foundTradePost.WorldLocation.GetDistanceTo( wormhole.WorldLocation, true ) <= MinimumOutpostDeploymentRange * 1.5 )
                         return DelReturn.Continue;
 
                     // If its not been claimed by another militia, claim it.
@@ -1251,7 +1257,7 @@ namespace SKCivilianIndustry
                     {
                         int stationDist = militiaShip.GetDistanceTo_ExpensiveAccurate( goalStation.WorldLocation, true, true );
                         int wormDist = militiaShip.GetDistanceTo_ExpensiveAccurate( militiaStatus.getWormhole().WorldLocation, true, true );
-                        int range = 5000;
+                        int range = MinimumOutpostDeploymentRange;
                         if ( stationDist > range || wormDist < range )
                         {
                             // Prepare its old id to be removed.
@@ -1723,11 +1729,16 @@ namespace SKCivilianIndustry
             if ( faction.MustBeAwakenedByPlayer && !faction.HasBeenAwakenedByPlayer )
                 return;
 
+            // Update settings.
+            MinimumOutpostDeploymentRange = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "OutpostMinDeploymentRange" );
+            MilitiaAttackOverkillPercentage = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaOverkillPerc" ) / 100.0;
+            SecondsBetweenMilitiaUpgrades = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "SecondsBetweenMilitiaUpgrades" );
+
             // Load our global data.
             CivilianWorld worldData = World.Instance.GetCivilianWorldExt();
 
-            // Update mark levels every half a minute.
-            if ( World_AIW2.Instance.GameSecond % 60 == 0 )
+            // Update mark levels every now and than.
+            if ( World_AIW2.Instance.GameSecond % SecondsBetweenMilitiaUpgrades == 0 )
             {
                 bool playerAligned = false;
                 if ( faction.Ex_MinorFactionCommon_GetPrimitives().Allegiance == "Player Team" )
@@ -2615,9 +2626,6 @@ namespace SKCivilianIndustry
                             return DelReturn.Continue;
                         } );
 
-                        if ( adjPlanet.Name == "Typhoon" )
-                            ArcenDebugging.SingleLineQuickDebug( "Typhoon Info: Hostiles: " + threat.Total + " Reinforcements: " + reinforcePoints );
-
                         // If we don't yet have an assessment for the planet, and it has enough threat, add it.
                         // Factor out planets that have already been covered by player units.
                         if ( reinforcePoints > 0 || threat.Total > Math.Max( 1000, (threat.FriendlyMobile + threat.FriendlyGuard) / 3 ) )
@@ -2625,7 +2633,7 @@ namespace SKCivilianIndustry
                             AttackAssessment adjAssessment = (from o in attackAssessments where o.Target.Index == adjPlanet.Index select o).FirstOrDefault();
                             if ( adjAssessment == null )
                             {
-                                adjAssessment = new AttackAssessment( adjPlanet, (int)(threat.Total * 1.25), reinforcePoints > 0 ? true : false );
+                                adjAssessment = new AttackAssessment( adjPlanet, (int)(threat.Total * MilitiaAttackOverkillPercentage), reinforcePoints > 0 ? true : false );
                                 // If we already have units on the planet, mark it as such.
                                 if ( threat.MilitiaMobile > 1000 )
                                     adjAssessment.MilitiaOnPlanet = true;
@@ -2882,7 +2890,7 @@ namespace SKCivilianIndustry
                             // current planet is more than 1 hop away from our centerpiece.
                             if ( entity.Planet.Index != centerpiece.Planet.Index && entity.LongRangePlanningData.FinalDestinationIndex != centerpiece.Planet.Index &&
                                 (entity.Planet.GetHopsTo( centerpiece.Planet ) > 1 || threat.Total <= 1000 ||
-                                threat.MilitiaMobile + threat.MilitiaGuard + threat.FriendlyGuard + threat.FriendlyMobile < threat.Total * 1.25) )
+                                threat.MilitiaMobile + threat.MilitiaGuard + threat.FriendlyGuard + threat.FriendlyMobile < threat.Total * MilitiaAttackOverkillPercentage) )
                             {
                                 QueueWormholeCommand( entity, centerpiece.Planet );
                             }
