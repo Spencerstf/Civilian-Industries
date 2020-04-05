@@ -30,9 +30,12 @@ namespace SKCivilianIndustry
         public CivilianFaction factionData;
 
         // Constants and/or game settings.
-        protected static int MinimumOutpostDeploymentRange;
-        protected static double MilitiaAttackOverkillPercentage;
-        protected static int SecondsBetweenMilitiaUpgrades;
+        protected int MinimumOutpostDeploymentRange;
+        protected double MilitiaAttackOverkillPercentage;
+        protected int SecondsBetweenMilitiaUpgrades;
+        protected bool DefensiveBattlestationForces;
+        public int MinTechToProcess;
+        public bool[] IgnoreResource;
 
         // Note: We clear all variables on the faction in the constructor.
         // This is the (current) best way to make sure data is not carried between saves, especially statics.
@@ -41,6 +44,7 @@ namespace SKCivilianIndustry
             factionData = null;
             LastGameSecondForMessageAboutThisPlanet = new ArcenSparseLookup<Planet, int>();
             LastGameSecondForLastTachyonBurstOnThisPlanet = new ArcenSparseLookup<Planet, int>();
+            IgnoreResource = new bool[(int)CivilianResource.Length];
         }
 
         // Scale ship costs based on intensity. 5 is 100%, with a 10% step up or down based on intensity.
@@ -260,7 +264,7 @@ namespace SKCivilianIndustry
                     for ( int x = 0; x < factionData.TradeStations.Count; x++ )
                     {
                         GameEntity_Squad station = World_AIW2.Instance.GetEntityByID_Squad( factionData.TradeStations[x] );
-                        if ( station == null )
+                        if ( station == null || station.TypeData.InternalName != "TradeStation" )
                             continue;
                         if ( station.Planet.Index == planet.Index )
                             return DelReturn.Continue;
@@ -1323,6 +1327,10 @@ namespace SKCivilianIndustry
                         if ( militiaCargo.Amount[y] <= 0 )
                             continue;
 
+                        // Skip if we're under the minimum tech requirement.
+                        if ( IgnoreResource[y] )
+                            continue;
+
                         // Get our tag to search for based on resource type.
                         string typeTag = "Civ" + ((CivilianTech)y).ToString() + "Turret";
 
@@ -1412,6 +1420,10 @@ namespace SKCivilianIndustry
                     for ( int y = 0; y < (int)CivilianResource.Length; y++ )
                     {
                         if ( militiaCargo.Amount[y] <= 0 )
+                            continue;
+
+                        // Skip if we're under the minimum tech requirement.
+                        if ( IgnoreResource[y] )
                             continue;
 
                         // If we're an advanced shipyard, use alternate logic.
@@ -1730,9 +1742,21 @@ namespace SKCivilianIndustry
                 return;
 
             // Update settings.
-            MinimumOutpostDeploymentRange = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "OutpostMinDeploymentRange" );
-            MilitiaAttackOverkillPercentage = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaOverkillPerc" ) / 100.0;
-            SecondsBetweenMilitiaUpgrades = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "SecondsBetweenMilitiaUpgrades" );
+            if ( faction.Ex_MinorFactionCommon_GetPrimitives().Allegiance == "Player Team" )
+            {
+                MinimumOutpostDeploymentRange = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MinimumOutpostDeploymentRange" );
+                MilitiaAttackOverkillPercentage = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaAttackOverkillPercentage" ) / 100.0;
+                SecondsBetweenMilitiaUpgrades = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "SecondsBetweenMilitiaUpgrades" );
+                MinTechToProcess = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MinTechToProcess" );
+                DefensiveBattlestationForces = AIWar2GalaxySettingTable.GetIsBoolSettingEnabledByName_DuringGame( "DefensiveBattlestationForces" );
+            } else
+            {
+                MinimumOutpostDeploymentRange = AIWar2GalaxySettingTable.Instance.GetRowByName( "MinimumOutpostDeploymentRange", false, null ).DefaultIntValue;
+                MilitiaAttackOverkillPercentage = AIWar2GalaxySettingTable.Instance.GetRowByName( "MilitiaAttackOverkillPercentage", false, null ).DefaultIntValue / 100.0;
+                SecondsBetweenMilitiaUpgrades = AIWar2GalaxySettingTable.Instance.GetRowByName( "SecondsBetweenMilitiaUpgrades", false, null ).DefaultIntValue;
+                MinTechToProcess = AIWar2GalaxySettingTable.Instance.GetRowByName( "MinTechToProcess", false, null ).DefaultIntValue;
+                DefensiveBattlestationForces = false; // Can't get a default boolean from xml, apparently.
+            }
 
             // Load our global data.
             CivilianWorld worldData = World.Instance.GetCivilianWorldExt();
@@ -1760,6 +1784,28 @@ namespace SKCivilianIndustry
                     entity.SetCurrentMarkLevelIfHigherThanCurrent( requestedMark, Context );
                     return DelReturn.Continue;
                 } );
+
+                // Update resource ignoring.
+                // Figure out what resources we should be ignoring.
+                for ( int x = 0; x < IgnoreResource.Length; x++ )
+                {
+                    List<TechUpgrade> upgrades = TechUpgradeTable.Instance.Rows;
+                    for ( int i = 0; i < upgrades.Count; i++ )
+                    {
+                        TechUpgrade upgrade = upgrades[i];
+                        if ( upgrade.InternalName == ((CivilianTech)x).ToString() )
+                        {
+                            int unlocked = faction.TechUnlocks[upgrade.RowIndex];
+                            unlocked += faction.FreeTechUnlocks[upgrade.RowIndex];
+                            unlocked += faction.CalculatedInheritedTechUnlocks[upgrade.RowIndex];
+                            if ( unlocked < MinTechToProcess )
+                                IgnoreResource[x] = true;
+                            else
+                                IgnoreResource[x] = false;
+                            break;
+                        }
+                    }
+                }
             }
 
             // Update faction relations. Generally a good idea to have this in your DoPerSecondLogic function since other factions can also change their allegiances.
@@ -2035,15 +2081,15 @@ namespace SKCivilianIndustry
                 if ( militia.GetCivilianMilitiaExt().Status != CivilianMilitiaStatus.Defending && militia.GetCivilianMilitiaExt().Status != CivilianMilitiaStatus.Patrolling )
                     continue;
 
-                // Don't request resources we're full on.
-                List<CivilianResource> fullOf = new List<CivilianResource>();
+                // Don't request resources we're full on, or that we are ignoring.
+                List<CivilianResource> toIgnore = new List<CivilianResource>();
                 CivilianCargo militiaCargo = militia.GetCivilianCargoExt();
                 for ( int y = 0; y < militiaCargo.Amount.Length; y++ )
-                    if ( militiaCargo.Amount[y] > 0 && militiaCargo.Amount[y] >= militiaCargo.Capacity[y] )
-                        fullOf.Add( (CivilianResource)y );
+                    if ( IgnoreResource[y] || (militiaCargo.Amount[y] > 0 && militiaCargo.Amount[y] >= militiaCargo.Capacity[y]) )
+                        toIgnore.Add( (CivilianResource)y );
 
                 // Stop if we're full of everything.
-                if ( fullOf.Count == (int)CivilianResource.Length )
+                if ( toIgnore.Count == (int)CivilianResource.Length )
                     continue;
 
                 int incoming = AnsweringImport.GetHasKey(militia.PrimaryKeyID) ? AnsweringImport[militia.PrimaryKeyID] : 0;
@@ -2054,7 +2100,7 @@ namespace SKCivilianIndustry
                     urgency -= MIL_URGENCY_REDUCTION_PER_REGULAR * incoming;
 
                 // Add a request for any resource.
-                factionData.ImportRequests.Add( new TradeRequest( CivilianResource.Length, fullOf, urgency, militia, 0 ) );
+                factionData.ImportRequests.Add( new TradeRequest( CivilianResource.Length, toIgnore, urgency, militia, 0 ) );
             }
             #endregion
 
@@ -2080,6 +2126,10 @@ namespace SKCivilianIndustry
                 {
                     // Skip if we don't accept it.
                     if ( requesterCargo.Capacity[y] <= 0 )
+                        continue;
+
+                    // Skip if we're supposed to.
+                    if ( IgnoreResource[y] )
                         continue;
 
                     // Resources we generate.
@@ -2501,6 +2551,10 @@ namespace SKCivilianIndustry
 
                 // Where are we going to send all our units?
                 Planet targetPlanet = null;
+
+                // If our centerpiece is a battlestation, and the user has requested them to have defensive forces, act on that.
+                if ( centerpiece.TypeData.IsBattlestation && DefensiveBattlestationForces )
+                    targetPlanet = centerpiece.Planet;
 
                 // If self or an adjacent friendly planet has hostile units on it that outnumber friendly defenses, including incoming waves, protect it.
                 for ( int y = 0; y < factionData.ThreatReports.Count && targetPlanet == null; y++ )

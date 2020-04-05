@@ -1,16 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <root>
   <!-- Civilian Industries -->
-  <galaxy_setting name="OutpostMinDeploymentRange" category="Civilians" display_name="Minimum Outpost Deployment Range" type="IntSlider"
+  <galaxy_setting name="MinimumOutpostDeploymentRange" category="Civilians" display_name="Minimum Outpost Deployment Range" type="IntSlider"
     default="6000" min="3000" max="10000" changeable_during_gameplay="true"
     description="How far away must an outpost be from your trade station in order to spawn. If set too high, Outpost may fail to spawn on smaller planets."  
   />
-  <galaxy_setting name="MilitiaOverkillPerc" category="Civilians" display_name="Civilian Overkill Percentage" type="IntSlider"
+  <galaxy_setting name="MilitiaAttackOverkillPercentage" category="Civilians" display_name="Civilian Overkill Percentage" type="IntSlider"
     default="125" min="100" max="500" changeable_during_gameplay="true"
     description="What percentage of forces does a group of militia need to attack a planet? Does not change defensive priorities or assisting player attacks."
   />
   <galaxy_setting name="SecondsBetweenMilitiaUpgrades" category="Civilians" display_name="Seconds Between Upgrades" type="IntSlider"
-    default="60" min="1" max="120" changeable_during_gameplay="true"
+    default="30" min="1" max="120" changeable_during_gameplay="true"
     description="How many seconds between each upgrade pulse. (This is when your militia ships recalculate techs and mark up to match.) Setting this too low may result in performance drops."
+  />
+  <galaxy_setting name="MinTechToProcess" category="Civilians" display_name="Minimum Tech to Process Resource" type="IntSlider"
+    default="0" min="0" max="4" changeable_during_gameplay="true"
+    description="How much of an investment must you have made into a tech for your civilians to process its respective resource? (Does not include Hull technology.)"
+  />
+  <galaxy_setting name="DefensiveBattlestationForces" category="Civilians" display_name="Defensive Battlestation Forces" type="BoolToggle"
+    default="false" changeable_during_gameplay="true"
+    description="Should militia forces created for a Battlestation always stay on the Battlestation's planet?"
   />
 </root>
