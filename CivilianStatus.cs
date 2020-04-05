@@ -15,11 +15,6 @@ namespace SKCivilianIndustry
         public int Version { get; private set; }
 
         /// <summary>
-        /// Current status of the ship.
-        /// </summary>
-        public CivilianShipStatus Status { get; set; } = CivilianShipStatus.Idle;
-
-        /// <summary>
         /// The index of requesting station.
         /// If - 1 the it is being sent from the grand station.
         /// </summary>
@@ -36,12 +31,9 @@ namespace SKCivilianIndustry
         /// </summary>
         public int LoadTimer { get; set; } = 0;
 
-        // Following three functions are used for initializing, saving, and loading data.
-        // Initialization function.
-        // Default values. Called on creation, NOT on load.
         public CivilianStatus()
         {
-            this.Status = CivilianShipStatus.Idle;
+
         }
 
         /// <summary>
@@ -50,8 +42,7 @@ namespace SKCivilianIndustry
         /// <param name="Buffer"></param>
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
-            Buffer.AddItem(1);
-            Buffer.AddItem((int)this.Status);
+            Buffer.AddItem(2);
             Buffer.AddItem(this.Origin);
             Buffer.AddItem(this.Destination);
             Buffer.AddItem(this.LoadTimer);
@@ -62,7 +53,8 @@ namespace SKCivilianIndustry
         public CivilianStatus(ArcenDeserializationBuffer Buffer)
         {
             this.Version = Buffer.ReadInt32();
-            this.Status = (CivilianShipStatus)Buffer.ReadInt32();
+            if ( this.Version < 2 )
+                Buffer.ReadInt32();
             this.Origin = Buffer.ReadInt32();
             this.Destination = Buffer.ReadInt32();
             this.LoadTimer = Buffer.ReadInt32();

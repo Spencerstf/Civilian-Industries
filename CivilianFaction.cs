@@ -1,12 +1,9 @@
 ﻿using Arcen.AIW2.Core;
 using Arcen.AIW2.External;
 using Arcen.Universal;
+using SKCivilianIndustry.Persistence;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SKCivilianIndustry.Persistence;
 
 namespace SKCivilianIndustry
 {
@@ -35,27 +32,27 @@ namespace SKCivilianIndustry
         public Dictionary<int, int> TradeStationRebuildTimerInSecondsByPlanet;
 
         // Functions for setting and getting rebuild timers.
-        public int GetTradeStationRebuildTimer(Planet planet)
+        public int GetTradeStationRebuildTimer( Planet planet )
         {
-            return GetTradeStationRebuildTimer(planet.Index);
+            return GetTradeStationRebuildTimer( planet.Index );
         }
-        public int GetTradeStationRebuildTimer(int planet)
+        public int GetTradeStationRebuildTimer( int planet )
         {
-            if (TradeStationRebuildTimerInSecondsByPlanet.ContainsKey(planet))
+            if ( TradeStationRebuildTimerInSecondsByPlanet.ContainsKey( planet ) )
                 return TradeStationRebuildTimerInSecondsByPlanet[planet];
             else
                 return 0;
         }
-        public void SetTradeStationRebuildTimer(Planet planet, int timer)
+        public void SetTradeStationRebuildTimer( Planet planet, int timer )
         {
-            SetTradeStationRebuildTimer(planet.Index, timer);
+            SetTradeStationRebuildTimer( planet.Index, timer );
         }
-        public void SetTradeStationRebuildTimer(int planet, int timer)
+        public void SetTradeStationRebuildTimer( int planet, int timer )
         {
-            if (TradeStationRebuildTimerInSecondsByPlanet.ContainsKey(planet))
+            if ( TradeStationRebuildTimerInSecondsByPlanet.ContainsKey( planet ) )
                 TradeStationRebuildTimerInSecondsByPlanet[planet] = timer;
             else
-                TradeStationRebuildTimerInSecondsByPlanet.Add(planet, timer);
+                TradeStationRebuildTimerInSecondsByPlanet.Add( planet, timer );
         }
 
         // Index of all cargo ships that belong to this faction.
@@ -97,33 +94,33 @@ namespace SKCivilianIndustry
         public List<TradeRequest> ExportRequests;
 
         // Get the threat value for a planet.
-        public (int MilitiaGuard, int MilitiaMobile, int FriendlyGuard, int FriendlyMobile, int CloakedHostile, int NonCloakedHostile, int Wave, int Total) GetThreat(Planet planet)
+        public (int MilitiaGuard, int MilitiaMobile, int FriendlyGuard, int FriendlyMobile, int CloakedHostile, int NonCloakedHostile, int Wave, int Total) GetThreat( Planet planet )
         {
             try
             {
                 // If reports aren't generated, return 0.
-                if (ThreatReports == null)
+                if ( ThreatReports == null )
                     return (0, 0, 0, 0, 0, 0, 0, 0);
                 else
-                    for (int x = 0; x < ThreatReports.Count; x++)
-                        if (ThreatReports[x].Planet.Index == planet.Index)
+                    for ( int x = 0; x < ThreatReports.Count; x++ )
+                        if ( ThreatReports[x].Planet.Index == planet.Index )
                             return ThreatReports[x].GetThreat();
                 // Planet not processed. Return 0.
                 return (0, 0, 0, 0, 0, 0, 0, 0);
             }
-            catch (Exception e)
+            catch ( Exception e )
             {
                 // Failed to return a report, return 0. Harmless, so we don't worry about informing the player.
-                ArcenDebugging.SingleLineQuickDebug(e.Message);
+                ArcenDebugging.SingleLineQuickDebug( e.Message );
                 return (0, 0, 0, 0, 0, 0, 0, 0);
             }
         }
 
         // Returns the base resource cost for ships.
-        public int GetResourceCost(Faction faction)
+        public int GetResourceCost( Faction faction )
         {
             // 51 - (Intensity ^ 1.5)
-            return 51 - (int)Math.Pow(faction.Ex_MinorFactionCommon_GetPrimitives().Intensity, 1.5);
+            return 51 - (int)Math.Pow( faction.Ex_MinorFactionCommon_GetPrimitives().Intensity, 1.5 );
         }
 
         /// <summary>
@@ -133,29 +130,75 @@ namespace SKCivilianIndustry
         public int GetCap( Faction faction )
         {
             int cap = 20;
-            for ( int x = 0; x < TradeStations.Count; x++ )
-                for ( int y = 0; y < faction.Ex_MinorFactionCommon_GetPrimitives().Intensity; y++ )
-                    cap = Math.Min( (int)Math.Ceiling( cap * 1.01 ), cap + 5 );
+            int intensity = faction.Ex_MinorFactionCommon_GetPrimitives().Intensity;
+            double intensityMult = 0.5 * intensity;
+            double stationMult = 0.05 * TradeStations.Count;
+            double totalMult = intensityMult + stationMult;
+            cap = (int)(Math.Ceiling( cap * totalMult ));
             return cap;
         }
 
-        // Return a cargo ship from any lists its in.
-        public void RemoveCargoShip(int cargoShipID)
+        // Should never be used by itself, removes the cargo ship from all applicable statuses, but keeps it in the main cargo ship list.
+        private void RemoveCargoShipStatus( int cargoShipID )
         {
-            if (this.CargoShips.Contains(cargoShipID))
-                this.CargoShips.Remove(cargoShipID);
-            if (this.CargoShipsIdle.Contains(cargoShipID))
-                this.CargoShipsIdle.Remove(cargoShipID);
-            if (this.CargoShipsLoading.Contains(cargoShipID))
-                this.CargoShipsLoading.Remove(cargoShipID);
-            if (this.CargoShipsUnloading.Contains(cargoShipID))
-                this.CargoShipsUnloading.Remove(cargoShipID);
-            if (this.CargoShipsBuilding.Contains(cargoShipID))
-                this.CargoShipsBuilding.Remove(cargoShipID);
-            if (this.CargoShipsPathing.Contains(cargoShipID))
-                this.CargoShipsPathing.Remove(cargoShipID);
-            if (this.CargoShipsEnroute.Contains(cargoShipID))
-                this.CargoShipsEnroute.Remove(cargoShipID);
+            if ( this.CargoShipsIdle.Contains( cargoShipID ) )
+                this.CargoShipsIdle.Remove( cargoShipID );
+            if ( this.CargoShipsLoading.Contains( cargoShipID ) )
+                this.CargoShipsLoading.Remove( cargoShipID );
+            if ( this.CargoShipsUnloading.Contains( cargoShipID ) )
+                this.CargoShipsUnloading.Remove( cargoShipID );
+            if ( this.CargoShipsBuilding.Contains( cargoShipID ) )
+                this.CargoShipsBuilding.Remove( cargoShipID );
+            if ( this.CargoShipsPathing.Contains( cargoShipID ) )
+                this.CargoShipsPathing.Remove( cargoShipID );
+            if ( this.CargoShipsEnroute.Contains( cargoShipID ) )
+                this.CargoShipsEnroute.Remove( cargoShipID );
+        }
+
+        /// <summary>
+        /// Remove a cargo ship from amy list it is currently in, effectively deleting it from the faction, but NOT from the world.
+        /// The entity itself must be killed or despawned before or after this.
+        /// </summary>
+        /// <param name="cargoShipID">The PrimaryKeyID of the ship to remove.</param>
+        public void RemoveCargoShip( int cargoShipID )
+        {
+            if ( this.CargoShips.Contains( cargoShipID ) )
+                this.CargoShips.Remove( cargoShipID );
+            RemoveCargoShipStatus( cargoShipID );
+        }
+
+        /// <summary>
+        /// Remove a cargo ship from whatever it is currently doing, and change its action to the requested action.
+        /// </summary>
+        /// <param name="cargoShipID">The PrimaryKeyID of the ship to modify.</param>
+        /// <param name="status">The status to change to. Idle, Loading, Unloading, Building, Pathing, or Enroute</param>
+        public void ChangeCargoShipStatus(GameEntity_Squad cargoShip, string status )
+        {
+            int cargoShipID = cargoShip.PrimaryKeyID;
+            if ( !this.CargoShips.Contains( cargoShipID ) )
+                return;
+            RemoveCargoShipStatus( cargoShipID );
+            switch ( status )
+            {
+                case "Loading":
+                    this.CargoShipsLoading.Add( cargoShipID );
+                    break;
+                case "Unloading":
+                    this.CargoShipsUnloading.Add( cargoShipID );
+                    break;
+                case "Building":
+                    this.CargoShipsBuilding.Add( cargoShipID );
+                    break;
+                case "Pathing":
+                    this.CargoShipsPathing.Add( cargoShipID );
+                    break;
+                case "Enroute":
+                    this.CargoShipsEnroute.Add( cargoShipID );
+                    break;
+                default:
+                    this.CargoShipsIdle.Add( cargoShipID );
+                    break;
+            }
         }
 
         /// <summary>
@@ -178,7 +221,7 @@ namespace SKCivilianIndustry
                     return true; // Planet has a trade station on it, its friendly.
             }
 
-            for(int x = 0; x < MilitiaLeaders.Count; x++ )
+            for ( int x = 0; x < MilitiaLeaders.Count; x++ )
             {
                 GameEntity_Squad militia = World_AIW2.Instance.GetEntityByID_Squad( MilitiaLeaders[x] );
                 if ( militia == null )
@@ -227,50 +270,50 @@ namespace SKCivilianIndustry
             this.ExportRequests = new List<TradeRequest>();
         }
         // Serialize a list.
-        private void SerializeList(List<int> list, ArcenSerializationBuffer Buffer)
+        private void SerializeList( List<int> list, ArcenSerializationBuffer Buffer )
         {
             // Lists require a special touch to save.
             // Get the number of items in the list, and store that as well.
             // This is so you know how many items you'll have to load later.
             int count = list.Count;
-            Buffer.AddItem(count);
-            for (int x = 0; x < count; x++)
-                Buffer.AddItem(list[x]);
+            Buffer.AddItem( count );
+            for ( int x = 0; x < count; x++ )
+                Buffer.AddItem( list[x] );
         }
-        private void SerializeDictionary(Dictionary<int, int> dict, ArcenSerializationBuffer Buffer)
+        private void SerializeDictionary( Dictionary<int, int> dict, ArcenSerializationBuffer Buffer )
         {
-            Buffer.AddItem(dict.Count);
-            foreach (int key in dict.Keys)
+            Buffer.AddItem( dict.Count );
+            foreach ( int key in dict.Keys )
             {
-                Buffer.AddItem(key);
-                Buffer.AddItem(dict[key]);
+                Buffer.AddItem( key );
+                Buffer.AddItem( dict[key] );
             }
         }
         // Saving our data.
-        public void SerializeTo(ArcenSerializationBuffer Buffer)
+        public void SerializeTo( ArcenSerializationBuffer Buffer )
         {
-            Buffer.AddItem(2);
-            Buffer.AddItem(this.GrandStation);
-            Buffer.AddItem(this.GrandStationRebuildTimerInSeconds);
-            SerializeList(TradeStations, Buffer);
-            SerializeDictionary(TradeStationRebuildTimerInSecondsByPlanet, Buffer);
-            SerializeList(CargoShips, Buffer);
-            SerializeList(MilitiaLeaders, Buffer);
-            SerializeList(CargoShipsIdle, Buffer);
-            SerializeList(CargoShipsLoading, Buffer);
-            SerializeList(CargoShipsUnloading, Buffer);
-            SerializeList(CargoShipsBuilding, Buffer);
-            SerializeList(CargoShipsPathing, Buffer);
-            SerializeList(CargoShipsEnroute, Buffer);
-            Buffer.AddItem(this.BuildCounter);
-            Buffer.AddItem(this.FailedCounter.Import);
-            Buffer.AddItem(this.FailedCounter.Export);
-            Buffer.AddItem(this.MilitiaCounter);
-            Buffer.AddItem(this.NextRaidInThisSeconds);
-            SerializeList(this.NextRaidWormholes, Buffer);
+            Buffer.AddItem( 2 );
+            Buffer.AddItem( this.GrandStation );
+            Buffer.AddItem( this.GrandStationRebuildTimerInSeconds );
+            SerializeList( TradeStations, Buffer );
+            SerializeDictionary( TradeStationRebuildTimerInSecondsByPlanet, Buffer );
+            SerializeList( CargoShips, Buffer );
+            SerializeList( MilitiaLeaders, Buffer );
+            SerializeList( CargoShipsIdle, Buffer );
+            SerializeList( CargoShipsLoading, Buffer );
+            SerializeList( CargoShipsUnloading, Buffer );
+            SerializeList( CargoShipsBuilding, Buffer );
+            SerializeList( CargoShipsPathing, Buffer );
+            SerializeList( CargoShipsEnroute, Buffer );
+            Buffer.AddItem( this.BuildCounter );
+            Buffer.AddItem( this.FailedCounter.Import );
+            Buffer.AddItem( this.FailedCounter.Export );
+            Buffer.AddItem( this.MilitiaCounter );
+            Buffer.AddItem( this.NextRaidInThisSeconds );
+            SerializeList( this.NextRaidWormholes, Buffer );
         }
         // Deserialize a list.
-        public List<int> DeserializeList(ArcenDeserializationBuffer Buffer)
+        public List<int> DeserializeList( ArcenDeserializationBuffer Buffer )
         {
             // Lists require a special touch to load.
             // We'll have saved the number of items stored up above to be used here to determine the number of items to load.
@@ -278,49 +321,49 @@ namespace SKCivilianIndustry
             // Can't add values to a list that doesn't exist, after all.
             int count = Buffer.ReadInt32();
             List<int> newList = new List<int>();
-            for (int x = 0; x < count; x++)
-                newList.Add(Buffer.ReadInt32());
+            for ( int x = 0; x < count; x++ )
+                newList.Add( Buffer.ReadInt32() );
             return newList;
         }
-        public Dictionary<int, int> DeserializeDictionary(ArcenDeserializationBuffer Buffer)
+        public Dictionary<int, int> DeserializeDictionary( ArcenDeserializationBuffer Buffer )
         {
             int count = Buffer.ReadInt32();
             Dictionary<int, int> newDict = new Dictionary<int, int>();
-            for (int x = 0; x < count; x++)
+            for ( int x = 0; x < count; x++ )
             {
                 int key = Buffer.ReadInt32();
                 int value = Buffer.ReadInt32();
-                if (!newDict.ContainsKey(key))
-                    newDict.Add(key, value);
+                if ( !newDict.ContainsKey( key ) )
+                    newDict.Add( key, value );
                 else
                     newDict[key] = value;
             }
             return newDict;
         }
         // Loading our data. Make sure the loading order is the same as the saving order.
-        public CivilianFaction(ArcenDeserializationBuffer Buffer)
+        public CivilianFaction( ArcenDeserializationBuffer Buffer )
         {
             this.Version = Buffer.ReadInt32();
             this.GrandStation = Buffer.ReadInt32();
             this.GrandStationRebuildTimerInSeconds = Buffer.ReadInt32();
-            this.TradeStations = DeserializeList(Buffer);
-            this.TradeStationRebuildTimerInSecondsByPlanet = DeserializeDictionary(Buffer);
-            this.CargoShips = DeserializeList(Buffer);
-            this.MilitiaLeaders = DeserializeList(Buffer);
-            this.CargoShipsIdle = DeserializeList(Buffer);
-            this.CargoShipsLoading = DeserializeList(Buffer);
-            this.CargoShipsUnloading = DeserializeList(Buffer);
-            this.CargoShipsBuilding = DeserializeList(Buffer);
-            this.CargoShipsPathing = DeserializeList(Buffer);
-            this.CargoShipsEnroute = DeserializeList(Buffer);
+            this.TradeStations = DeserializeList( Buffer );
+            this.TradeStationRebuildTimerInSecondsByPlanet = DeserializeDictionary( Buffer );
+            this.CargoShips = DeserializeList( Buffer );
+            this.MilitiaLeaders = DeserializeList( Buffer );
+            this.CargoShipsIdle = DeserializeList( Buffer );
+            this.CargoShipsLoading = DeserializeList( Buffer );
+            this.CargoShipsUnloading = DeserializeList( Buffer );
+            this.CargoShipsBuilding = DeserializeList( Buffer );
+            this.CargoShipsPathing = DeserializeList( Buffer );
+            this.CargoShipsEnroute = DeserializeList( Buffer );
             this.BuildCounter = Buffer.ReadInt32();
-            if (this.Version >= 2)
+            if ( this.Version >= 2 )
                 this.FailedCounter = (Buffer.ReadInt32(), Buffer.ReadInt32());
             else
                 this.FailedCounter = (0, 0);
             this.MilitiaCounter = Buffer.ReadInt32();
             this.NextRaidInThisSeconds = Buffer.ReadInt32();
-            this.NextRaidWormholes = DeserializeList(Buffer);
+            this.NextRaidWormholes = DeserializeList( Buffer );
 
             // Recreate an empty list on load. Will be populated when needed.
             this.ThreatReports = new List<ThreatReport>();

@@ -261,7 +261,6 @@
     <Compile Include="Persistence\CivilianPlanetExternalData.cs" />
     <Compile Include="CivilianResource.cs" />
     <Compile Include="CivilianResourceHexColors.cs" />
-    <Compile Include="CivilianShipStatus.cs" />
     <Compile Include="CivilianStatus.cs" />
     <Compile Include="Persistence\CivilianStatusExtensions.cs" />
     <Compile Include="Persistence\CivilianStatusExternalData.cs" />

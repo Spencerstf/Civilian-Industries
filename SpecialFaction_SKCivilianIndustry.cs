@@ -620,7 +620,7 @@ namespace SKCivilianIndustry
 
                     // Add the cargo ship to our faction data.
                     factionData.CargoShips.Add( entity.PrimaryKeyID );
-                    factionData.CargoShipsIdle.Add( entity.PrimaryKeyID );
+                    factionData.ChangeCargoShipStatus( entity, "Idle" );
                 }
 
                 // Reset the build counter.
@@ -671,10 +671,7 @@ namespace SKCivilianIndustry
                 // If station not found, idle the cargo ship.
                 if ( destinationStation == null )
                 {
-                    factionData.CargoShipsEnroute.Remove( cargoShip.PrimaryKeyID );
-                    factionData.CargoShipsIdle.Add( cargoShip.PrimaryKeyID );
-                    shipStatus.Status = CivilianShipStatus.Idle;
-                    cargoShip.SetCivilianStatusExt( shipStatus );
+                    factionData.ChangeCargoShipStatus( cargoShip, "Idle" );
                     x--;
                     continue;
                 }
@@ -686,23 +683,19 @@ namespace SKCivilianIndustry
                 // If ship is close to destination station, start unloading.
                 if ( cargoShip.GetDistanceTo_ExpensiveAccurate( destinationStation.WorldLocation, true, true ) < 2000 )
                 {
-                    factionData.CargoShipsEnroute.Remove( cargoShip.PrimaryKeyID );
                     if ( factionData.TradeStations.Contains( destinationStation.PrimaryKeyID ) )
                     {
-                        shipStatus.Status = CivilianShipStatus.Unloading;
-                        factionData.CargoShipsUnloading.Add( cargoShip.PrimaryKeyID );
+                        factionData.ChangeCargoShipStatus( cargoShip, "Unloading" );
                         shipStatus.LoadTimer = 120;
                     }
                     else if ( factionData.MilitiaLeaders.Contains( destinationStation.PrimaryKeyID ) )
                     {
-                        shipStatus.Status = CivilianShipStatus.Building;
-                        factionData.CargoShipsBuilding.Add( cargoShip.PrimaryKeyID );
+                        factionData.ChangeCargoShipStatus( cargoShip, "Building" );
                         shipStatus.LoadTimer = 120;
                     }
                     else
                     {
-                        shipStatus.Status = CivilianShipStatus.Idle;
-                        factionData.CargoShipsIdle.Add( cargoShip.PrimaryKeyID );
+                        factionData.ChangeCargoShipStatus( cargoShip, "Idle" );
                     }
                     cargoShip.SetCivilianStatusExt( shipStatus );
                     x--;
@@ -724,10 +717,7 @@ namespace SKCivilianIndustry
                 // If station not found, idle the cargo ship.
                 if ( originStation == null )
                 {
-                    factionData.CargoShipsPathing.Remove( cargoShip.PrimaryKeyID );
-                    factionData.CargoShipsIdle.Add( cargoShip.PrimaryKeyID );
-                    shipStatus.Status = CivilianShipStatus.Idle;
-                    cargoShip.SetCivilianStatusExt( shipStatus );
+                    factionData.ChangeCargoShipStatus( cargoShip, "Idle" );
                     x--;
                     continue;
                 }
@@ -739,9 +729,7 @@ namespace SKCivilianIndustry
                 // If ship is close to origin station, start loading.
                 if ( cargoShip.GetDistanceTo_ExpensiveAccurate( originStation.WorldLocation, true, true ) < 2000 )
                 {
-                    factionData.CargoShipsPathing.Remove( cargoShip.PrimaryKeyID );
-                    factionData.CargoShipsLoading.Add( cargoShip.PrimaryKeyID );
-                    shipStatus.Status = CivilianShipStatus.Loading;
+                    factionData.ChangeCargoShipStatus( cargoShip, "Loading" );
                     shipStatus.LoadTimer = 120;
                     x--;
                     cargoShip.SetCivilianStatusExt( shipStatus );
@@ -774,65 +762,78 @@ namespace SKCivilianIndustry
                 // If the station has died, free the cargo ship.
                 if ( originStation == null )
                 {
-                    factionData.CargoShipsLoading.Remove( cargoShip.PrimaryKeyID );
-                    factionData.CargoShipsIdle.Add( cargoShip.PrimaryKeyID );
-                    shipStatus.Status = CivilianShipStatus.Idle;
-                    cargoShip.SetCivilianStatusExt( shipStatus );
+                    factionData.ChangeCargoShipStatus( cargoShip, "Idle" );
                     x--;
                     continue;
                 }
                 CivilianCargo originCargo = originStation.GetCivilianCargoExt();
-                bool isFinished = true;
+
+                // Load the destination station and its cargo.
+                GameEntity_Squad destinationStation = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Destination );
+                // If the station has died, free the cargo ship.
+                if ( destinationStation == null )
+                {
+                    factionData.ChangeCargoShipStatus( cargoShip, "Idle" );
+                    x--;
+                    continue;
+                }
+                CivilianCargo destinationCargo = destinationStation.GetCivilianCargoExt();
 
                 // Send the resources, if the station has any left.
                 for ( int y = 0; y < (int)CivilianResource.Length; y++ )
                 {
-                    // When loading up resources, we should try to take as much from the station as we can.
-                    if ( originCargo.PerSecond[y] <= 0 )
+                    // If its something that our destination produces, take none, and, in fact, give back if we have some.
+                    if ( destinationCargo.PerSecond[y] > 0 )
                     {
-                        if ( originCargo.Amount[y] > 0 && shipCargo.Amount[y] < shipCargo.Capacity[y] )
+                        if (shipCargo.Amount[y] > 0 && originCargo.Amount[y] < originCargo.Capacity[y] )
                         {
-                            shipCargo.Amount[y]++;
-                            originCargo.Amount[y]--;
-                            isFinished = false;
+                            shipCargo.Amount[y]--;
+                            originCargo.Amount[y]++;
                         }
                     }
-                    // Otherwise, do Loading logic.
                     else
                     {
-                        // Stop if there are no resources left to load, if its a resource the station uses, or if the ship is full.
-                        if ( originCargo.Amount[y] <= 0 || originCargo.PerSecond[y] < 0 || shipCargo.Amount[y] >= shipCargo.Capacity[y] )
-                            continue;
+                        // When loading up resources, we should try to take as much from the station as we can.
+                        if ( originCargo.PerSecond[y] <= 0 )
+                        {
+                            if ( originCargo.Amount[y] > 0 && shipCargo.Amount[y] < shipCargo.Capacity[y] )
+                            {
+                                shipCargo.Amount[y]++;
+                                originCargo.Amount[y]--;
+                            }
+                        }
+                        // Otherwise, do Loading logic.
+                        else
+                        {
+                            // Stop if there are no resources left to load, if its a resource the station uses, or if the ship is full.
+                            if ( originCargo.Amount[y] <= 0 || originCargo.PerSecond[y] < 0 || shipCargo.Amount[y] >= shipCargo.Capacity[y] )
+                                continue;
 
-                        // Transfer a single resource per second.
-                        originCargo.Amount[y]--;
-                        shipCargo.Amount[y]++;
-                        isFinished = false;
+                            // Transfer a single resource per second.
+                            originCargo.Amount[y]--;
+                            shipCargo.Amount[y]++;
+                        }
                     }
                 }
 
-                // If load timer hit 0, or we're finished stop loading.
-                if ( shipStatus.LoadTimer <= 0 || isFinished )
+                // If load timer hit 0, see if we should head out.
+                if ( shipStatus.LoadTimer <= 0 )
                 {
-                    // If none of our resources are over half, stop.
+                    // If none of our resources are full, stop.
                     bool hasEnough = false;
                     for ( int y = 0; y < (int)CivilianResource.Length; y++ )
-                        if ( shipCargo.Amount[y] >= shipCargo.Capacity[y] / 2 )
+                        if ( shipCargo.Amount[y] >= shipCargo.Capacity[y] )
                         {
                             hasEnough = true;
                             break;
                         }
                     if ( hasEnough )
                     {
-                        factionData.CargoShipsLoading.Remove( cargoShip.PrimaryKeyID );
-                        factionData.CargoShipsEnroute.Add( cargoShip.PrimaryKeyID );
-                        shipStatus.Status = CivilianShipStatus.Enroute;
+                        factionData.ChangeCargoShipStatus( cargoShip, "Enroute" );
                     }
                     else
                     {
-                        factionData.CargoShipsLoading.Remove( cargoShip.PrimaryKeyID );
-                        factionData.CargoShipsIdle.Add( cargoShip.PrimaryKeyID );
-                        shipStatus.Status = CivilianShipStatus.Idle;
+                        factionData.ChangeCargoShipStatus( cargoShip, "Idle" );
                     }
                     shipStatus.LoadTimer = 0;
                     cargoShip.SetCivilianStatusExt( shipStatus );
@@ -861,10 +862,7 @@ namespace SKCivilianIndustry
                 // If the station has died, free the cargo ship.
                 if ( destinationStation == null )
                 {
-                    factionData.CargoShipsUnloading.Remove( cargoShip.PrimaryKeyID );
-                    factionData.CargoShipsIdle.Add( cargoShip.PrimaryKeyID );
-                    shipStatus.Status = CivilianShipStatus.Idle;
-                    cargoShip.SetCivilianStatusExt( shipStatus );
+                    factionData.ChangeCargoShipStatus( cargoShip, "Idle" );
                     x--;
                     continue;
                 }
@@ -907,10 +905,7 @@ namespace SKCivilianIndustry
                 // If ship finished, have it go back to being Idle.
                 if ( isFinished )
                 {
-                    factionData.CargoShipsUnloading.Remove( cargoShip.PrimaryKeyID );
-                    factionData.CargoShipsIdle.Add( cargoShip.PrimaryKeyID );
-                    shipStatus.Status = CivilianShipStatus.Idle;
-                    cargoShip.SetCivilianStatusExt( shipStatus );
+                    factionData.ChangeCargoShipStatus( cargoShip, "Idle" );
                     x--;
                 }
             }
@@ -932,10 +927,7 @@ namespace SKCivilianIndustry
                 // If the station has died, free the cargo ship.
                 if ( destinationStation == null )
                 {
-                    factionData.CargoShipsBuilding.Remove( cargoShip.PrimaryKeyID );
-                    factionData.CargoShipsIdle.Add( cargoShip.PrimaryKeyID );
-                    shipStatus.Status = CivilianShipStatus.Idle;
-                    cargoShip.SetCivilianStatusExt( shipStatus );
+                    factionData.ChangeCargoShipStatus( cargoShip, "Idle" );
                     x--;
                     continue;
                 }
@@ -967,10 +959,7 @@ namespace SKCivilianIndustry
                 // If ship finished, have it go back to being Idle.
                 if ( isFinished )
                 {
-                    factionData.CargoShipsBuilding.Remove( cargoShip.PrimaryKeyID );
-                    factionData.CargoShipsIdle.Add( cargoShip.PrimaryKeyID );
-                    shipStatus.Status = CivilianShipStatus.Idle;
-                    cargoShip.SetCivilianStatusExt( shipStatus );
+                    factionData.ChangeCargoShipStatus( cargoShip, "Idle" );
                     x--;
                 }
             }
@@ -2003,9 +1992,23 @@ namespace SKCivilianIndustry
         public void DoTradeRequests( Faction faction, ArcenLongTermIntermittentPlanningContext Context )
         {
             Engine_Universal.NewTimingsBeingBuilt.StartRememberingFrame( FramePartTimings.TimingType.ShortTermBackgroundThreadEntry, "DoTradeRequests" );
+
+            #region Preparation
             // Clear our lists.
             factionData.ImportRequests = new List<TradeRequest>();
             factionData.ExportRequests = new List<TradeRequest>();
+
+            // Preload two lists, one for ships' origin station, and one for ships' destination station.
+            ArcenSparseLookup<int, int> AnsweringImport = new ArcenSparseLookup<int, int>();
+            ArcenSparseLookup<int, int> AnsweringExport = new ArcenSparseLookup<int, int>();
+
+            ProcessTradingResponse( factionData.CargoShipsPathing, ref AnsweringImport, ref AnsweringExport );
+            ProcessTradingResponse( factionData.CargoShipsLoading, ref AnsweringImport, ref AnsweringExport );
+            ProcessTradingResponse( factionData.CargoShipsEnroute, ref AnsweringImport );
+            ProcessTradingResponse( factionData.CargoShipsUnloading, ref AnsweringImport );
+            ProcessTradingResponse( factionData.CargoShipsBuilding, ref AnsweringImport );
+            #endregion
+
             #region Planet Level Trading
             // See if any militia stations don't have a trade in progress.
             for ( int x = 0; x < factionData.MilitiaLeaders.Count; x++ )
@@ -2032,33 +2035,15 @@ namespace SKCivilianIndustry
                 if ( fullOf.Count == (int)CivilianResource.Length )
                     continue;
 
-                // See if we already have cargo ships enroute.
-                int cargoEnroute = 0;
-                for ( int y = 0; y < factionData.CargoShips.Count; y++ )
-                {
-                    GameEntity_Squad cargoShip = World_AIW2.Instance.GetEntityByID_Squad( factionData.CargoShips[y] );
-                    if ( cargoShip == null )
-                    {
-                        factionData.RemoveCargoShip( factionData.CargoShips[y] );
-                        y--;
-                        continue;
-                    }
-                    if ( cargoShip.GetCivilianStatusExt().Status == CivilianShipStatus.Idle )
-                        continue;
-                    if ( cargoShip.GetCivilianStatusExt().Destination == militia.PrimaryKeyID )
-                    {
-                        cargoEnroute++;
-                    }
-                }
-
+                int incoming = AnsweringImport.GetHasKey(militia.PrimaryKeyID) ? AnsweringImport[militia.PrimaryKeyID] : 0;
                 int urgency = BASE_MIL_URGENCY;
                 if ( militia.TypeData.GetHasTag( "BuildsProtectors" ) ) // Allow more inbound ships for larger projects.
-                    urgency -= MIL_URGENCY_REDUCTION_PER_LARGE * cargoEnroute;
+                    urgency -= MIL_URGENCY_REDUCTION_PER_LARGE * incoming;
                 else
-                    urgency -= MIL_URGENCY_REDUCTION_PER_REGULAR * cargoEnroute;
+                    urgency -= MIL_URGENCY_REDUCTION_PER_REGULAR * incoming;
 
                 // Add a request for any resource.
-                factionData.ImportRequests.Add( new TradeRequest( CivilianResource.Length, fullOf, urgency, militia, 1 ) );
+                factionData.ImportRequests.Add( new TradeRequest( CivilianResource.Length, fullOf, urgency, militia, 0 ) );
             }
             #endregion
 
@@ -2079,21 +2064,6 @@ namespace SKCivilianIndustry
                 if ( requesterCargo == null )
                     continue;
 
-                int incomingForPickup = 0;
-                int incomingForDropoff = 0;
-                // Lower urgency for each ship inbound to pickup.
-                for ( int z = 0; z < factionData.CargoShips.Count; z++ )
-                {
-                    GameEntity_Squad cargoShip = World_AIW2.Instance.GetEntityByID_Squad( factionData.CargoShips[z] );
-                    if ( cargoShip == null )
-                        continue;
-                    CivilianStatus cargoStatus = cargoShip.GetCivilianStatusExt();
-                    if ( (cargoStatus.Status == CivilianShipStatus.Enroute || cargoStatus.Status == CivilianShipStatus.Unloading) && cargoStatus.Destination == factionData.TradeStations[x] )
-                        incomingForDropoff++;
-                    if ( (cargoStatus.Status == CivilianShipStatus.Pathing || cargoStatus.Status == CivilianShipStatus.Loading) && cargoStatus.Origin == factionData.TradeStations[x] )
-                        incomingForPickup++;
-                }
-
                 // Check each type of cargo seperately.
                 for ( int y = 0; y < requesterCargo.PerSecond.Length; y++ )
                 {
@@ -2109,7 +2079,8 @@ namespace SKCivilianIndustry
                         {
                             // Absolute max export cap is the per second generation times 5.
                             // This may cause some shortages, but that fits in with the whole trading theme so is a net positive regardless.
-                            int urgency = ((int)Math.Ceiling( (1.0 * requesterCargo.Amount[y] / requesterCargo.Capacity[y]) * (requesterCargo.PerSecond[y] * 5) )) - incomingForPickup;
+                            int incoming = AnsweringExport.GetHasKey( requester.PrimaryKeyID ) ? AnsweringExport[requester.PrimaryKeyID] : 0;
+                            int urgency = ((int)Math.Ceiling( ((500.0 + requesterCargo.Amount[y]) / requesterCargo.Capacity[y]) * (requesterCargo.PerSecond[y] * 5) )) - incoming;
 
                             if ( urgency > 0 )
                                 factionData.ExportRequests.Add( new TradeRequest( (CivilianResource)y, urgency, requester, 5 ) );
@@ -2118,18 +2089,20 @@ namespace SKCivilianIndustry
                     // Resource we store. Simply put out a super tiny order to import/export based on current stores.
                     else if ( requesterCargo.Amount[y] >= requesterCargo.Capacity[y] * 0.5 )
                     {
+                        int incoming = AnsweringExport.GetHasKey( requester.PrimaryKeyID ) ? AnsweringExport[requester.PrimaryKeyID] : 0;
                         int urgency = BASE_CIV_URGENCY;
-                        urgency -= incomingForPickup * CIV_URGENCY_REDUCTION_PER_REGULAR;
+                        urgency -= incoming * CIV_URGENCY_REDUCTION_PER_REGULAR;
 
                         if ( urgency > 0 )
                             factionData.ExportRequests.Add( new TradeRequest( (CivilianResource)y, 0, requester, 3 ) );
                     }
                     else if ( requesterCargo.Amount[y] < requesterCargo.Capacity[y] * 0.5 )
                     {
+                        int incoming = AnsweringImport.GetHasKey( requester.PrimaryKeyID ) ? AnsweringImport[requester.PrimaryKeyID] : 0;
                         int urgency = BASE_CIV_URGENCY;
-                        urgency -= incomingForDropoff * CIV_URGENCY_REDUCTION_PER_REGULAR;
+                        urgency -= incoming * CIV_URGENCY_REDUCTION_PER_REGULAR;
 
-                        factionData.ImportRequests.Add( new TradeRequest( (CivilianResource)y, urgency, requester, 3 ) );
+                        factionData.ImportRequests.Add( new TradeRequest( (CivilianResource)y, urgency, requester, 5 ) );
                     }
 
                 }
@@ -2206,12 +2179,10 @@ namespace SKCivilianIndustry
                 if ( hasEnough )
                 {
                     // Update our cargo ship with its new mission.
-                    factionData.CargoShipsIdle.Remove( foundCargoShip.PrimaryKeyID );
-                    factionData.CargoShipsEnroute.Add( foundCargoShip.PrimaryKeyID );
                     CivilianStatus cargoShipStatus = foundCargoShip.GetCivilianStatusExt();
                     cargoShipStatus.Origin = -1;    // No origin station required.
                     cargoShipStatus.Destination = requestingEntity.PrimaryKeyID;
-                    cargoShipStatus.Status = CivilianShipStatus.Enroute;
+                    factionData.ChangeCargoShipStatus( foundCargoShip, "Enroute" );
                     // Save its updated status.
                     foundCargoShip.SetCivilianStatusExt( cargoShipStatus );
                     // Remove the completed entities from processing.
@@ -2250,9 +2221,7 @@ namespace SKCivilianIndustry
                     cargoShipStatus.Origin = otherStation.PrimaryKeyID;
                     cargoShipStatus.Destination = requestingEntity.PrimaryKeyID;
 
-                    factionData.CargoShipsIdle.Remove( foundCargoShip.PrimaryKeyID );
-                    factionData.CargoShipsPathing.Add( foundCargoShip.PrimaryKeyID );
-                    cargoShipStatus.Status = CivilianShipStatus.Pathing;
+                    factionData.ChangeCargoShipStatus( foundCargoShip, "Pathing" );
                     // Save its updated status.
                     foundCargoShip.SetCivilianStatusExt( cargoShipStatus );
                     // Remove the completed entities from processing.
@@ -2271,86 +2240,118 @@ namespace SKCivilianIndustry
 
             Engine_Universal.NewTimingsBeingBuilt.FinishRememberingFrame( FramePartTimings.TimingType.MainSimThreadNormal, "DoTradeRequests" );
         }
+        private void ProcessTradingResponse(List<int> ships, ref ArcenSparseLookup<int, int> AnsweringImport, ref ArcenSparseLookup<int, int> AnsweringExport )
+        {
+            for ( int x = 0; x < ships.Count; x++ )
+            {
+                GameEntity_Squad ship = World_AIW2.Instance.GetEntityByID_Squad( ships[x] );
+                if ( ship == null )
+                    continue;
+                int target = ship.GetCivilianStatusExt().Origin;
+                if ( !AnsweringExport.GetHasKey( target ) )
+                    AnsweringExport.AddPair( target, 1 );
+                else
+                    AnsweringExport[target]++;
+            }
+            ProcessTradingResponse( ships, ref AnsweringImport );
+        }
+        private void ProcessTradingResponse( List<int> ships, ref ArcenSparseLookup<int, int> AnsweringImport )
+        {
+            for ( int x = 0; x < ships.Count; x++ )
+            {
+                GameEntity_Squad ship = World_AIW2.Instance.GetEntityByID_Squad( ships[x] );
+                if ( ship == null )
+                    continue;
+                int target = ship.GetCivilianStatusExt().Destination;
+                if ( !AnsweringImport.GetHasKey( target ) )
+                    AnsweringImport.AddPair( target, 1 );
+                else
+                    AnsweringImport[target]++;
+            }
+        }
 
         // Handle movement of cargo ships to their orign and destination points.
         public void DoCargoShipMovement( Faction faction, ArcenLongTermIntermittentPlanningContext Context )
         {
-            // Loop through each of our cargo ships.
-            for ( int x = 0; x < factionData.CargoShips.Count; x++ )
+            // Ships going somewhere for dropoff.
+            ProcessIncoming( factionData.CargoShipsBuilding, 5000 );
+            ProcessIncoming( factionData.CargoShipsEnroute, 2000 );
+            ProcessIncoming( factionData.CargoShipsUnloading, 5000 );
+
+            // Ships going somewhere for pickup.
+            ProcessOutgoing( factionData.CargoShipsLoading, 5000 );
+            ProcessOutgoing( factionData.CargoShipsPathing, 2000 );
+        }
+        private void ProcessIncoming( List<int> ships, int maxDistance  )
+        {
+            for ( int x = 0; x < ships.Count; x++ )
             {
                 // Load the ship and its status.
-                GameEntity_Squad ship = World_AIW2.Instance.GetEntityByID_Squad( factionData.CargoShips[x] );
+                GameEntity_Squad ship = World_AIW2.Instance.GetEntityByID_Squad( ships[x] );
                 if ( ship == null )
                     continue;
                 CivilianStatus shipStatus = ship.GetCivilianStatusExt();
                 if ( shipStatus == null )
                     continue;
+                // Enroute movement.
+                // ship currently moving towards destination station.
+                GameEntity_Squad destinationStation = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Destination );
+                if ( destinationStation == null )
+                    continue;
+                Planet destinationPlanet = destinationStation.Planet;
 
-                switch ( shipStatus.Status )
+                // Check if already on planet.
+                if ( ship.Planet.Index == destinationPlanet.Index )
                 {
-                    case CivilianShipStatus.Loading:
-                    case CivilianShipStatus.Pathing:
-                        // Ship currently moving towards origin station.
-                        GameEntity_Squad originStation = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Origin );
-                        if ( originStation == null )
-                            continue;
-                        Planet originPlanet = originStation.Planet;
+                    if ( destinationStation.GetDistanceTo_ExpensiveAccurate( ship.WorldLocation, true, true ) < maxDistance )
+                        continue; // Stop if already close enough.
 
-                        // Check if already on planet.
-                        if ( ship.Planet.Index == originPlanet.Index )
-                        {
-                            if ( originStation.GetDistanceTo_ExpensiveAccurate( ship.WorldLocation, true, true ) < 2000 )
-                                break; // Stop if already close enough.
-                            if ( ship.Orders.QueuedOrders.Count > 0
-                            && originStation.GetDistanceTo_ExpensiveAccurate( ship.Orders.QueuedOrders[0].RelatedPoint, true, true ) < 2000 )
-                                break; // Stop if already enroute.
+                    // On planet. Begin pathing towards the station.
+                    QueueMovementCommand( ship, destinationStation.WorldLocation );
+                }
+                else
+                {
+                    if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationIndex != -1 )
+                        continue; // Stop if already enroute.
 
-                            // On planet. Begin pathing towards the station.
-                            QueueMovementCommand( ship, originStation.WorldLocation );
-                        }
-                        else
-                        {
-                            if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationIndex != -1 )
-                                break; // Stop if already moving.
+                    // Not on planet yet, prepare wormhole navigation.
+                    QueueWormholeCommand( ship, destinationPlanet );
+                }
+            }
+        }
+        private void ProcessOutgoing( List<int> ships, int maxDistance )
+        {
+            for ( int x = 0; x < ships.Count; x++ )
+            {
+                // Load the ship and its status.
+                GameEntity_Squad ship = World_AIW2.Instance.GetEntityByID_Squad( ships[x] );
+                if ( ship == null )
+                    continue;
+                CivilianStatus shipStatus = ship.GetCivilianStatusExt();
+                if ( shipStatus == null )
+                    continue;
+                // Ship currently moving towards origin station.
+                GameEntity_Squad originStation = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Origin );
+                if ( originStation == null )
+                    continue;
+                Planet originPlanet = originStation.Planet;
 
-                            // Not on planet yet, queue a wormhole movement command.
-                            QueueWormholeCommand( ship, originPlanet );
-                        }
-                        break;
-                    case CivilianShipStatus.Unloading:
-                    case CivilianShipStatus.Building:
-                    case CivilianShipStatus.Enroute:
-                        // Enroute movement.
-                        // ship currently moving towards destination station.
-                        GameEntity_Squad destinationStation = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Destination );
-                        if ( destinationStation == null )
-                            continue;
-                        Planet destinationPlanet = destinationStation.Planet;
+                // Check if already on planet.
+                if ( ship.Planet.Index == originPlanet.Index )
+                {
+                    if ( originStation.GetDistanceTo_ExpensiveAccurate( ship.WorldLocation, true, true ) < maxDistance )
+                        continue; // Stop if already close enough.
 
-                        // Check if already on planet.
-                        if ( ship.Planet.Index == destinationPlanet.Index )
-                        {
-                            if ( destinationStation.GetDistanceTo_ExpensiveAccurate( ship.WorldLocation, true, true ) < 2000 )
-                                break; // Stop if already close enough.
-                            if ( ship.Orders.QueuedOrders.Count > 0
-                            && destinationStation.GetDistanceTo_ExpensiveAccurate( ship.Orders.QueuedOrders[0].RelatedPoint, true, true ) < 2000 )
-                                break; // Stop if already enroute.
+                    // On planet. Begin pathing towards the station.
+                    QueueMovementCommand( ship, originStation.WorldLocation );
+                }
+                else
+                {
+                    if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationIndex != -1 )
+                        continue; // Stop if already moving.
 
-                            // On planet. Begin pathing towards the station.
-                            QueueMovementCommand( ship, destinationStation.WorldLocation );
-                        }
-                        else
-                        {
-                            if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationIndex != -1 )
-                                break; // Stop if already enroute.
-
-                            // Not on planet yet, prepare wormhole navigation.
-                            QueueWormholeCommand( ship, destinationPlanet );
-                        }
-                        break;
-                    case CivilianShipStatus.Idle:
-                    default:
-                        break;
+                    // Not on planet yet, queue a wormhole movement command.
+                    QueueWormholeCommand( ship, originPlanet );
                 }
             }
         }

@@ -24,14 +24,66 @@ namespace SKCivilianIndustry
             CivilianCargo cargoData = RelatedEntityOrNull.GetCivilianCargoExt();
             // Load our status data.
             CivilianStatus shipStatus = RelatedEntityOrNull.GetCivilianStatusExt();
+            // Load our faction data.
+            CivilianFaction factionData = RelatedEntityOrNull.PlanetFaction.Faction.GetCivilianFactionExt();
 
-            // Inform them about what the ship is doing.
-            Buffer.Add("\nThis ship is currently " + shipStatus.Status.ToString());
-            // If currently pathing or enroute, continue to explain towards where
-            if (shipStatus.Status == CivilianShipStatus.Enroute)
-                Buffer.Add(" towards " + World_AIW2.Instance.GetEntityByID_Squad(shipStatus.Destination).GetQualifiedName() + " on planet " + World_AIW2.Instance.GetEntityByID_Squad(shipStatus.Destination).Planet.Name);
-            if (shipStatus.Status == CivilianShipStatus.Pathing)
-                Buffer.Add(" towards " + World_AIW2.Instance.GetEntityByID_Squad(shipStatus.Origin).Planet.Name);
+            // Inform them what the ship is currently doing.
+            Buffer.Add( "\nThis ship is currently " );
+            // Idle
+            if ( factionData.CargoShipsIdle.Contains( RelatedEntityOrNull.PrimaryKeyID ) )
+                Buffer.Add( "Idle." );
+            // Pathing
+            if ( factionData.CargoShipsPathing.Contains( RelatedEntityOrNull.PrimaryKeyID ) )
+            {
+                Buffer.Add( "Pathing" );
+                GameEntity_Squad target = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Origin );
+                if ( target != null )
+                    Buffer.Add( " towards " + target.TypeData.DisplayName + " on " + target.Planet.Name );
+                Buffer.Add( "." );
+            }
+            // Loading
+            if ( factionData.CargoShipsLoading.Contains( RelatedEntityOrNull.PrimaryKeyID ) )
+            {
+                Buffer.Add( "Loading resources" );
+                GameEntity_Squad target = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Origin );
+                if ( target != null )
+                    Buffer.Add( " from " + target.TypeData.DisplayName + " on " + target.Planet.Name );
+                Buffer.Add( "." );
+                if ( shipStatus.LoadTimer > 0 )
+                    Buffer.Add( " It will automatically depart after " + shipStatus.LoadTimer + " seconds" );
+                GameEntity_Squad target2 = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Destination );
+                if ( target2 != null )
+                    Buffer.Add( " and head towards " + target2.TypeData.DisplayName + " on " + target2.Planet.Name );
+                Buffer.Add( "." );
+            }
+            // Enroute
+            if ( factionData.CargoShipsEnroute.Contains( RelatedEntityOrNull.PrimaryKeyID ) )
+            {
+                Buffer.Add( "Enroute" );
+                GameEntity_Squad target = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Destination );
+                if ( target != null )
+                    Buffer.Add( " towards " + target.TypeData.DisplayName + " on " + target.Planet.Name );
+                Buffer.Add( "." );
+            }
+            // Unloading
+            if ( factionData.CargoShipsUnloading.Contains( RelatedEntityOrNull.PrimaryKeyID ) )
+            {
+                Buffer.Add( "Unloading resources" );
+                GameEntity_Squad target = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Destination );
+                if ( target != null )
+                    Buffer.Add( " onto " + target.TypeData.DisplayName + " on " + target.Planet.Name );
+                Buffer.Add( "." );
+            }
+            // Building
+            if ( factionData.CargoShipsBuilding.Contains( RelatedEntityOrNull.PrimaryKeyID ) )
+            {
+                Buffer.Add( "Building forces" );
+                GameEntity_Squad target = World_AIW2.Instance.GetEntityByID_Squad( shipStatus.Destination );
+                if ( target != null )
+                    Buffer.Add( " at " + target.TypeData.DisplayName + " on " + target.Planet.Name );
+                Buffer.Add( "." );
+            }
+
             // Inform them about what the ship has on it.
             for (int x = 0; x < cargoData.Amount.Length; x++)
                 if (cargoData.Amount[x] > 0)
