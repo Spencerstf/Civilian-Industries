@@ -87,7 +87,7 @@
     -->
     <entity name="CargoShip" display_name="Cargo Ship" cannot_be_stacked="true"
             description="A civilian trade ship. It is tasked with moving resources throughout your planets. Upgraded by Metal Generation and Light Tech."
-            tags="CivilianIndustryEntity,CargoShip,ShowsOnNormalDisplayMode"
+            tags="CivilianIndustryEntity,CargoShip,ShowsOnNormalDisplayMode" should_never_be_captured_by_another_faction="true"
             visuals="assets/_finalgamemeshes/humanoddities/colonyship/colonyship.prefab"
             icon_name="Official/ColonyShip"
             gimbal_icon_size_multiplier="0.75"
@@ -120,7 +120,7 @@
             Deploys into Outposts and Patrol Posts.
     -->
     <entity name="MilitiaConstructionShip" display_name="Militia Construction Ship" skip_export="true" copy_from="AssaultFrigate" tags="MilitiaShip,MilitiaConstructionShip,CivilianIndustryEntity"
-            hull_points="500000" shield_points="100000" speed="BelowAverage1" cannot_be_stacked="true"
+            hull_points="500000" shield_points="100000" speed="BelowAverage1" cannot_be_stacked="true" should_never_be_captured_by_another_faction="true"
             description="A militia ship, it is carrying materials required to construct a defensive building. Upgraded by Engineering and Medium Tech."
             description_appender_dll="SKCivilianIndustry"
             description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
