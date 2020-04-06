@@ -36,6 +36,7 @@ namespace SKCivilianIndustry
         protected bool DefensiveBattlestationForces;
         public int MinTechToProcess;
         public bool[] IgnoreResource;
+        public double MilitiaStockpilePercentage;
 
         // Note: We clear all variables on the faction in the constructor.
         // This is the (current) best way to make sure data is not carried between saves, especially statics.
@@ -1373,7 +1374,7 @@ namespace SKCivilianIndustry
                             int cost = (int)(CostIntensityModifier( faction ) * (baseCost * countCostModifier * (militiaStatus.CostMultiplier / 100.0)));
 
                             if ( militiaCargo.Capacity[y] < cost )
-                                militiaCargo.Capacity[y] = (int)(cost * 1.25); // Stockpile some resources.
+                                militiaCargo.Capacity[y] = (int)(cost * MilitiaStockpilePercentage); // Stockpile some resources.
 
                             if ( militiaCargo.Amount[y] >= cost )
                             {
@@ -1482,7 +1483,7 @@ namespace SKCivilianIndustry
                             }
 
                             if ( militiaCargo.Capacity[y] < cost )
-                                militiaCargo.Capacity[y] = (int)(cost * 1.25); // Stockpile some resources.
+                                militiaCargo.Capacity[y] = (int)(cost * MilitiaStockpilePercentage); // Stockpile some resources.
 
                             if ( militiaCargo.Amount[y] >= cost )
                             {
@@ -1558,6 +1559,8 @@ namespace SKCivilianIndustry
                     militiaShip.SetCivilianMilitiaExt( militiaStatus );
                     militiaShip.SetCivilianCargoExt( militiaCargo );
                 }
+
+
                 processed.Add( militiaShip.PrimaryKeyID );
             }
             for ( int x = 0; x < toRemove.Count; x++ )
@@ -1749,6 +1752,7 @@ namespace SKCivilianIndustry
                 SecondsBetweenMilitiaUpgrades = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "SecondsBetweenMilitiaUpgrades" );
                 MinTechToProcess = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MinTechToProcess" );
                 DefensiveBattlestationForces = AIWar2GalaxySettingTable.GetIsBoolSettingEnabledByName_DuringGame( "DefensiveBattlestationForces" );
+                MilitiaStockpilePercentage = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaStockpilePercentage" ) / 100.0;
             } else
             {
                 MinimumOutpostDeploymentRange = AIWar2GalaxySettingTable.Instance.GetRowByName( "MinimumOutpostDeploymentRange", false, null ).DefaultIntValue;
@@ -1756,6 +1760,7 @@ namespace SKCivilianIndustry
                 SecondsBetweenMilitiaUpgrades = AIWar2GalaxySettingTable.Instance.GetRowByName( "SecondsBetweenMilitiaUpgrades", false, null ).DefaultIntValue;
                 MinTechToProcess = AIWar2GalaxySettingTable.Instance.GetRowByName( "MinTechToProcess", false, null ).DefaultIntValue;
                 DefensiveBattlestationForces = false; // Can't get a default boolean from xml, apparently.
+                MilitiaStockpilePercentage = AIWar2GalaxySettingTable.Instance.GetRowByName( "MilitiaStockpilePercentage", false, null ).DefaultIntValue / 100.0;
             }
 
             // Load our global data.

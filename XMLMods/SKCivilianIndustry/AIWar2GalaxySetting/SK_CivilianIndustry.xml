@@ -9,6 +9,10 @@
     default="125" min="100" max="500" changeable_during_gameplay="true"
     description="What percentage of forces does a group of militia need to attack a planet? Does not change defensive priorities or assisting player attacks."
   />
+  <galaxy_setting name="DefensiveBattlestationForces" category="Civilians" display_name="Defensive Battlestation Forces" type="BoolToggle"
+    default="false" changeable_during_gameplay="true"
+    description="Should militia forces created for a Battlestation always stay on the Battlestation's planet?"
+  />
   <galaxy_setting name="SecondsBetweenMilitiaUpgrades" category="Civilians" display_name="Seconds Between Upgrades" type="IntSlider"
     default="30" min="1" max="120" changeable_during_gameplay="true"
     description="How many seconds between each upgrade pulse. (This is when your militia ships recalculate techs and mark up to match.) Setting this too low may result in performance drops."
@@ -17,8 +21,8 @@
     default="0" min="0" max="4" changeable_during_gameplay="true"
     description="How much of an investment must you have made into a tech for your civilians to process its respective resource? (Does not include Hull technology.)"
   />
-  <galaxy_setting name="DefensiveBattlestationForces" category="Civilians" display_name="Defensive Battlestation Forces" type="BoolToggle"
-    default="false" changeable_during_gameplay="true"
-    description="Should militia forces created for a Battlestation always stay on the Battlestation's planet?"
+  <galaxy_setting name="MilitiaStockpilePercentage" category="Civilians" display_name="Militia Stockpiling Capacity" type="IntSlider"
+    default="125" min="125" max="1000" changeable_during_gameplay="true"
+    description="When a Militia building is full on units, it will request this % of additional resources to attempt to counteract losses suffered. Raising this will make resources spread slower, but allow worlds you've owned for longer to better reinforce after large fights."
   />
 </root>
