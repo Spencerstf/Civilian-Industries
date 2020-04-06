@@ -55,6 +55,27 @@ namespace SKCivilianIndustry
             return 1.5 - (intensity * 0.1);
         }
 
+        /// <summary>
+        /// Returns a Civilian faction that is friendly.
+        /// </summary>
+        /// <param name="faction">The faction that we want our found Civilian faction to be friendly to.</param>
+        /// <returns></returns>
+        public static Faction GetFriendlyIndustry( Faction faction )
+        {
+            Faction alliedFaction = null;
+            World_AIW2.Instance.DoForFactions( delegate ( Faction foundFactiion )
+             {
+                 if ( foundFactiion.Implementation is SpecialFaction_SKCivilianIndustry && faction.GetIsFriendlyTowards( foundFactiion ) )
+                 {
+                     alliedFaction = foundFactiion;
+                     return DelReturn.Break;
+                 }
+
+                 return DelReturn.Continue;
+             } );
+            return alliedFaction;
+        }
+
         // Set up initial relationships.
         public override void SetStartingFactionRelationships( Faction faction )
         {

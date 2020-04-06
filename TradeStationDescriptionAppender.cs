@@ -14,32 +14,24 @@ namespace SKCivilianIndustry
     /// </summary>
     public class TradeStationDescriptionAppender : IGameEntityDescriptionAppender
     {
-        public void AddToDescriptionBuffer(GameEntity_Squad RelatedEntityOrNull, GameEntityTypeData RelatedEntityTypeData, ArcenDoubleCharacterBuffer Buffer)
+        public void AddToDescriptionBuffer( GameEntity_Squad RelatedEntityOrNull, GameEntityTypeData RelatedEntityTypeData, ArcenDoubleCharacterBuffer Buffer )
         {
             // Make sure we are getting an entity.
-            if (RelatedEntityOrNull == null)
+            if ( RelatedEntityOrNull == null )
                 return;
             // Load our cargo data.
             CivilianCargo cargoData = RelatedEntityOrNull.GetCivilianCargoExt();
 
+            SpecialFaction_SKCivilianIndustry civFaction;
+            if ( RelatedEntityOrNull.PlanetFaction.Faction.Implementation is SpecialFaction_SKCivilianIndustry )
+                civFaction = (SpecialFaction_SKCivilianIndustry)RelatedEntityOrNull.PlanetFaction.Faction.Implementation;
+            else
+                civFaction = (SpecialFaction_SKCivilianIndustry)SpecialFaction_SKCivilianIndustry.GetFriendlyIndustry( RelatedEntityOrNull.PlanetFaction.Faction ).Implementation;
+
             // Inform them about what the station has on it.
-            for (int x = 0; x < cargoData.Amount.Length; x++)
+            for ( int x = 0; x < cargoData.Amount.Length; x++ )
             {
-                // Skip if we're under the minimum tech requirement.
-                int unlocked = 0;
-                List<TechUpgrade> upgrades = TechUpgradeTable.Instance.Rows;
-                for ( int i = 0; i < upgrades.Count; i++ )
-                {
-                    TechUpgrade upgrade = upgrades[i];
-                    if ( upgrade.InternalName == ((CivilianTech)x).ToString() )
-                    {
-                        unlocked += RelatedEntityOrNull.PlanetFaction.Faction.TechUnlocks[upgrade.RowIndex];
-                        unlocked += RelatedEntityOrNull.PlanetFaction.Faction.FreeTechUnlocks[upgrade.RowIndex];
-                        unlocked += RelatedEntityOrNull.PlanetFaction.Faction.CalculatedInheritedTechUnlocks[upgrade.RowIndex];
-                        break;
-                    }
-                }
-                if ( ((SpecialFaction_SKCivilianIndustry)RelatedEntityOrNull.PlanetFaction.Faction.Implementation).IgnoreResource[x] )
+                if ( civFaction.IgnoreResource[x] )
                 {
                     if ( cargoData.PerSecond[x] != 0 )
                     {
@@ -67,7 +59,7 @@ namespace SKCivilianIndustry
             }
 
             // Add in an empty line to stop any other gunk (such as the fleet display) from messing up our given information.
-            Buffer.Add("\n");
+            Buffer.Add( "\n" );
             return;
         }
     }
