@@ -1044,7 +1044,7 @@ namespace SKCivilianIndustry
                         return DelReturn.Continue;
 
                     // Skip if too close to the post
-                    if ( foundTradePost.WorldLocation.GetDistanceTo( wormhole.WorldLocation, true ) <= MinimumOutpostDeploymentRange * 1.5 )
+                    if ( foundTradePost.WorldLocation.GetDistanceTo( wormhole.WorldLocation, true ) <= MinimumOutpostDeploymentRange * 2 )
                         return DelReturn.Continue;
 
                     // If its not been claimed by another militia, claim it.
