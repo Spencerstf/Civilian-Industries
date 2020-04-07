@@ -25,4 +25,8 @@
     default="125" min="125" max="1000" changeable_during_gameplay="true"
     description="When a Militia building is full on units, it will request this % of additional resources to attempt to counteract losses suffered. Raising this will make resources spread slower, but allow worlds you've owned for longer to better reinforce after large fights."
   />
+  <galaxy_setting name="MilitiaExpandWithAllAllies" category="Civilians" display_name="Expands With All Allies" type="BoolToggle"
+    default="false" changeable_during_gameplay="true"
+    description="Should friendly Civilians expand alongside all allies instead of just player influence? (This will make them mimic the minor faction team logic, where they will expand alongside any allies with stationary buildings on a planet.)"
+  />
 </root>

@@ -39,6 +39,7 @@ namespace SKCivilianIndustry
         public int MinTechToProcess;
         public bool[] IgnoreResource;
         public double MilitiaStockpilePercentage;
+        protected bool MilitiaExpandWithAllAllies;
 
         // Note: We clear all variables on the faction in the constructor.
         // This is the (current) best way to make sure data is not carried between saves, especially statics.
@@ -104,6 +105,7 @@ namespace SKCivilianIndustry
                 MinTechToProcess = AIWar2GalaxySettingTable.Instance.GetRowByName( "MinTechToProcess", false, null ).DefaultIntValue;
                 DefensiveBattlestationForces = false; // Can't get a default boolean from xml, apparently.
                 MilitiaStockpilePercentage = AIWar2GalaxySettingTable.Instance.GetRowByName( "MilitiaStockpilePercentage", false, null ).DefaultIntValue / 100.0;
+                MilitiaExpandWithAllAllies = false;
                 SettingsInitialized = true;
             }
             // Set relationships.
@@ -128,6 +130,7 @@ namespace SKCivilianIndustry
                     MinTechToProcess = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MinTechToProcess" );
                     DefensiveBattlestationForces = AIWar2GalaxySettingTable.GetIsBoolSettingEnabledByName_DuringGame( "DefensiveBattlestationForces" );
                     MilitiaStockpilePercentage = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaStockpilePercentage" ) / 100.0;
+                    MilitiaExpandWithAllAllies = AIWar2GalaxySettingTable.GetIsBoolSettingEnabledByName_DuringGame( "MilitiaExpandWithAllAllies" );
                     PlayerAligned = true;
                     break;
             }
@@ -201,7 +204,7 @@ namespace SKCivilianIndustry
                 } );
                 return;
             }
-            else
+            else if ( !PlayerAligned )
             {
                 // Not player or ai, see if they have a 'safe' planet for us to spawn on.
                 Galaxy galaxy = World_AIW2.Instance.Galaxies[0];
@@ -366,9 +369,10 @@ namespace SKCivilianIndustry
 
                     return DelReturn.Continue;
                 } );
-            else
+            else if ( !PlayerAligned || MilitiaExpandWithAllAllies )
             {
-                // Not player or ai, see if they have a 'safe' planet for us to spawn on.
+                // Not player or ai. 
+                // If this industry is not friendly to the player, or the player requested it, have civilians expand with other factions.
                 Galaxy galaxy = World_AIW2.Instance.Galaxies[0];
                 for ( int x = 0; x < galaxy.Planets.Count; x++ )
                 {
