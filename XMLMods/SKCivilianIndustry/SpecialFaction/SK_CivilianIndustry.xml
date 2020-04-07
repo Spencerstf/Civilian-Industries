@@ -7,6 +7,7 @@
            type_name="SKCivilianIndustry.SpecialFaction_SKCivilianIndustry"
            team_center_color="Purple" team_border_color="cF8F8FF"
            type="SpecialFaction"
+           can_be_targeted_by_annoyed_non_human_units="true"
            description="A faction consisting of hardworking humans. As you expand to other planets, they will expand along with you to bolster your economy and offer you additional defensive and utility buildings on your colonies.">
   <custom_field name="Intensity" display_name="Strength" description="Just how effective is this faction?"
           sort_group="200" setting_type="IntSlider" default="5" min="1" max="10" />
