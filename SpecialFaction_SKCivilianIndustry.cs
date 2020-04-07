@@ -1669,8 +1669,8 @@ namespace SKCivilianIndustry
 
                     return DelReturn.Continue;
                 } );
-
-                World_AIW2.Instance.QueueLogMessageCommand( "The AI is preparing to raid cargo ships on planets near " + targetStation.Planet.Name, JournalEntryImportance.KeepLonger );
+                if ( PlayerAligned )
+                    World_AIW2.Instance.QueueLogMessageCommand( "The AI is preparing to raid cargo ships on planets near " + targetStation.Planet.Name, JournalEntryImportance.KeepLonger );
 
                 // Start timer.
                 factionData.NextRaidInThisSeconds = 119;
@@ -1758,7 +1758,8 @@ namespace SKCivilianIndustry
             int timeFactor = 900; // Minimum delay between raid waves.
             int budgetFactor = SpecialFaction_AI.Instance.GetSpecificBudgetAIPurchaseCostGainPerSecond( aiFaction, AIBudgetType.Wave, true, true ).GetNearestIntPreferringHigher();
             int tradeFactor = factionData.TradeStations.Count * 3;
-            int raidBudget = (budgetFactor + tradeFactor) * timeFactor;
+            double intensityMult = 0.8 + (0.04 * faction.Ex_MinorFactionCommon_GetPrimitives().Intensity);
+            int raidBudget = (int)((budgetFactor + tradeFactor) * timeFactor * intensityMult);
 
             // Stop once we're over budget. (Though allow our last wave to exceed it if needed.)
             for ( int x = 0; x < factionData.CargoShips.Count && raidBudget > 0; x++ )
@@ -1769,7 +1770,8 @@ namespace SKCivilianIndustry
 
 
             // Let the player know they're about to lose money.
-            World_AIW2.Instance.QueueLogMessageCommand( "The AI has begun their raid.", JournalEntryImportance.KeepLonger );
+            if ( PlayerAligned )
+                World_AIW2.Instance.QueueLogMessageCommand( "The AI has begun their raid.", JournalEntryImportance.KeepLonger );
 
             // Reset raid information.
             factionData.NextRaidInThisSeconds = 1800;
