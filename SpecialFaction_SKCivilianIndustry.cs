@@ -30,6 +30,8 @@ namespace SKCivilianIndustry
         public CivilianFaction factionData;
 
         // Constants and/or game settings.
+        private bool SettingsInitialized;
+        public bool PlayerAligned;
         protected int MinimumOutpostDeploymentRange;
         protected double MilitiaAttackOverkillPercentage;
         protected int SecondsBetweenMilitiaUpgrades;
@@ -42,6 +44,8 @@ namespace SKCivilianIndustry
         // This is the (current) best way to make sure data is not carried between saves, especially statics.
         public SpecialFaction_SKCivilianIndustry() : base()
         {
+            SettingsInitialized = false;
+            PlayerAligned = false;
             factionData = null;
             LastGameSecondForMessageAboutThisPlanet = new ArcenSparseLookup<Planet, int>();
             LastGameSecondForLastTachyonBurstOnThisPlanet = new ArcenSparseLookup<Planet, int>();
@@ -85,24 +89,46 @@ namespace SKCivilianIndustry
             enemyThisFactionToAll( faction );
 
             // Than do our intial relationship step.
-            UpdateAllegiance( faction );
+            UpdateAllegianceAndSettings( faction );
         }
 
-        // Update relationships.
-        protected virtual void UpdateAllegiance( Faction faction )
+        // Update relationships and settings.
+        protected virtual void UpdateAllegianceAndSettings( Faction faction )
         {
+            // Reset settings if needed.
+            if ( !SettingsInitialized )
+            {
+                MinimumOutpostDeploymentRange = AIWar2GalaxySettingTable.Instance.GetRowByName( "MinimumOutpostDeploymentRange", false, null ).DefaultIntValue;
+                MilitiaAttackOverkillPercentage = AIWar2GalaxySettingTable.Instance.GetRowByName( "MilitiaAttackOverkillPercentage", false, null ).DefaultIntValue / 100.0;
+                SecondsBetweenMilitiaUpgrades = AIWar2GalaxySettingTable.Instance.GetRowByName( "SecondsBetweenMilitiaUpgrades", false, null ).DefaultIntValue;
+                MinTechToProcess = AIWar2GalaxySettingTable.Instance.GetRowByName( "MinTechToProcess", false, null ).DefaultIntValue;
+                DefensiveBattlestationForces = false; // Can't get a default boolean from xml, apparently.
+                MilitiaStockpilePercentage = AIWar2GalaxySettingTable.Instance.GetRowByName( "MilitiaStockpilePercentage", false, null ).DefaultIntValue / 100.0;
+                SettingsInitialized = true;
+            }
+            // Set relationships.
             switch ( faction.Ex_MinorFactionCommon_GetPrimitives().Allegiance )
             {
                 case "AI Team":
                     allyThisFactionToAI( faction );
+                    PlayerAligned = false;
                     break;
                 case "Minor Faction Team Red":
                 case "Minor Faction Team Blue":
                 case "Minor Faction Team Green":
                     allyThisFactionToMinorFactionTeam( faction, faction.Ex_MinorFactionCommon_GetPrimitives().Allegiance );
+                    PlayerAligned = false;
                     break;
                 default:
                     allyThisFactionToHumans( faction );
+                    // If human related, also reload settings in case they changed them.
+                    MinimumOutpostDeploymentRange = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MinimumOutpostDeploymentRange" );
+                    MilitiaAttackOverkillPercentage = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaAttackOverkillPercentage" ) / 100.0;
+                    SecondsBetweenMilitiaUpgrades = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "SecondsBetweenMilitiaUpgrades" );
+                    MinTechToProcess = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MinTechToProcess" );
+                    DefensiveBattlestationForces = AIWar2GalaxySettingTable.GetIsBoolSettingEnabledByName_DuringGame( "DefensiveBattlestationForces" );
+                    MilitiaStockpilePercentage = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaStockpilePercentage" ) / 100.0;
+                    PlayerAligned = true;
                     break;
             }
         }
@@ -817,7 +843,7 @@ namespace SKCivilianIndustry
                     // If its something that our destination produces, take none, and, in fact, give back if we have some.
                     if ( destinationCargo.PerSecond[y] > 0 )
                     {
-                        if (shipCargo.Amount[y] > 0 && originCargo.Amount[y] < originCargo.Capacity[y] )
+                        if ( shipCargo.Amount[y] > 0 && originCargo.Amount[y] < originCargo.Capacity[y] )
                         {
                             shipCargo.Amount[y]--;
                             originCargo.Amount[y]++;
@@ -1602,13 +1628,6 @@ namespace SKCivilianIndustry
                 return;
             }
 
-            // If we're allied to the ai, stop it.
-            if ( faction.Ex_MinorFactionCommon_GetPrimitives().Allegiance == "AI Team" )
-            {
-                factionData.NextRaidInThisSeconds = 6000000;
-                return;
-            }
-
             // Pick a random trade station.
             GameEntity_Squad targetStation = World_AIW2.Instance.GetEntityByID_Squad( factionData.TradeStations[Context.RandomToUse.Next( factionData.TradeStations.Count )] );
             if ( targetStation != null )
@@ -1765,24 +1784,8 @@ namespace SKCivilianIndustry
             if ( faction.MustBeAwakenedByPlayer && !faction.HasBeenAwakenedByPlayer )
                 return;
 
-            // Update settings.
-            if ( faction.Ex_MinorFactionCommon_GetPrimitives().Allegiance == "Player Team" )
-            {
-                MinimumOutpostDeploymentRange = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MinimumOutpostDeploymentRange" );
-                MilitiaAttackOverkillPercentage = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaAttackOverkillPercentage" ) / 100.0;
-                SecondsBetweenMilitiaUpgrades = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "SecondsBetweenMilitiaUpgrades" );
-                MinTechToProcess = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MinTechToProcess" );
-                DefensiveBattlestationForces = AIWar2GalaxySettingTable.GetIsBoolSettingEnabledByName_DuringGame( "DefensiveBattlestationForces" );
-                MilitiaStockpilePercentage = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaStockpilePercentage" ) / 100.0;
-            } else
-            {
-                MinimumOutpostDeploymentRange = AIWar2GalaxySettingTable.Instance.GetRowByName( "MinimumOutpostDeploymentRange", false, null ).DefaultIntValue;
-                MilitiaAttackOverkillPercentage = AIWar2GalaxySettingTable.Instance.GetRowByName( "MilitiaAttackOverkillPercentage", false, null ).DefaultIntValue / 100.0;
-                SecondsBetweenMilitiaUpgrades = AIWar2GalaxySettingTable.Instance.GetRowByName( "SecondsBetweenMilitiaUpgrades", false, null ).DefaultIntValue;
-                MinTechToProcess = AIWar2GalaxySettingTable.Instance.GetRowByName( "MinTechToProcess", false, null ).DefaultIntValue;
-                DefensiveBattlestationForces = false; // Can't get a default boolean from xml, apparently.
-                MilitiaStockpilePercentage = AIWar2GalaxySettingTable.Instance.GetRowByName( "MilitiaStockpilePercentage", false, null ).DefaultIntValue / 100.0;
-            }
+            // Update faction relations and game settings.
+            UpdateAllegianceAndSettings( faction );
 
             // Load our global data.
             CivilianWorld worldData = World.Instance.GetCivilianWorldExt();
@@ -1790,18 +1793,18 @@ namespace SKCivilianIndustry
             // Update mark levels every now and than.
             if ( World_AIW2.Instance.GameSecond % SecondsBetweenMilitiaUpgrades == 0 )
             {
-                bool playerAligned = false;
-                if ( faction.Ex_MinorFactionCommon_GetPrimitives().Allegiance == "Player Team" )
-                {
-                    playerAligned = true;
+                if ( PlayerAligned )
                     faction.InheritsTechUpgradesFromPlayerFactions = true;
-                    faction.RecalculateMarkLevelsAndInheritedTechUnlocks();
-                }
+                else
+                    faction.InheritsTechUpgradesFromPlayerFactions = false;
+                faction.RecalculateMarkLevelsAndInheritedTechUnlocks();
+
                 int globalAIMark = BadgerFactionUtilityMethods.GetRandomAIFaction( Context ).CurrentGeneralMarkLevel;
+
                 faction.Entities.DoForEntities( delegate ( GameEntity_Squad entity )
                 {
                     int requestedMark = faction.GetGlobalMarkLevelForShipLine( entity.TypeData );
-                    if ( !playerAligned )
+                    if ( !PlayerAligned )
                     {
                         requestedMark = Math.Max( requestedMark, globalAIMark );
                         if ( !entity.TypeData.IsMobile )
@@ -1833,9 +1836,6 @@ namespace SKCivilianIndustry
                     }
                 }
             }
-
-            // Update faction relations. Generally a good idea to have this in your DoPerSecondLogic function since other factions can also change their allegiances.
-            UpdateAllegiance( faction );
 
             // If we don't yet have it, create our factionData.
             if ( factionData == null )
@@ -1947,18 +1947,21 @@ namespace SKCivilianIndustry
             DoMilitiaDeployment( faction, Context );
 
             // Handle AI response. Have some variation on wave timers.
-            if ( factionData.NextRaidInThisSeconds > 120 )
-                factionData.NextRaidInThisSeconds = Math.Max( 120, factionData.NextRaidInThisSeconds - Context.RandomToUse.Next( 1, 3 ) );
-            else if ( factionData.NextRaidInThisSeconds > 0 )
-                factionData.NextRaidInThisSeconds -= Context.RandomToUse.Next( 1, 3 );
+            if ( faction.Ex_MinorFactionCommon_GetPrimitives().Allegiance != "AI Team" )
+            {
+                if ( factionData.NextRaidInThisSeconds > 120 )
+                    factionData.NextRaidInThisSeconds = Math.Max( 120, factionData.NextRaidInThisSeconds - Context.RandomToUse.Next( 1, 3 ) );
+                else if ( factionData.NextRaidInThisSeconds > 0 )
+                    factionData.NextRaidInThisSeconds -= Context.RandomToUse.Next( 1, 3 );
 
-            // Prepare (and warn the player about) an upcoming raid.
-            if ( factionData.NextRaidInThisSeconds == 120 )
-                PrepareAIRaid( faction, Context );
+                // Prepare (and warn the player about) an upcoming raid.
+                if ( factionData.NextRaidInThisSeconds == 120 )
+                    PrepareAIRaid( faction, Context );
 
-            // Raid!
-            if ( factionData.NextRaidInThisSeconds <= 0 )
-                DoAIRaid( faction, Context );
+                // Raid!
+                if ( factionData.NextRaidInThisSeconds <= 0 )
+                    DoAIRaid( faction, Context );
+            }
 
             // Save our faction data.
             faction.SetCivilianFactionExt( factionData );
@@ -2118,7 +2121,7 @@ namespace SKCivilianIndustry
                 if ( toIgnore.Count == (int)CivilianResource.Length )
                     continue;
 
-                int incoming = AnsweringImport.GetHasKey(militia.PrimaryKeyID) ? AnsweringImport[militia.PrimaryKeyID] : 0;
+                int incoming = AnsweringImport.GetHasKey( militia.PrimaryKeyID ) ? AnsweringImport[militia.PrimaryKeyID] : 0;
                 int urgency = BASE_MIL_URGENCY;
                 if ( militia.TypeData.GetHasTag( "BuildsProtectors" ) ) // Allow more inbound ships for larger projects.
                     urgency -= MIL_URGENCY_REDUCTION_PER_LARGE * incoming;
@@ -2327,7 +2330,7 @@ namespace SKCivilianIndustry
 
             Engine_Universal.NewTimingsBeingBuilt.FinishRememberingFrame( FramePartTimings.TimingType.MainSimThreadNormal, "DoTradeRequests" );
         }
-        private void ProcessTradingResponse(List<int> ships, ref ArcenSparseLookup<int, int> AnsweringImport, ref ArcenSparseLookup<int, int> AnsweringExport )
+        private void ProcessTradingResponse( List<int> ships, ref ArcenSparseLookup<int, int> AnsweringImport, ref ArcenSparseLookup<int, int> AnsweringExport )
         {
             for ( int x = 0; x < ships.Count; x++ )
             {
@@ -2369,7 +2372,7 @@ namespace SKCivilianIndustry
             ProcessOutgoing( factionData.CargoShipsLoading, 5000 );
             ProcessOutgoing( factionData.CargoShipsPathing, 2000 );
         }
-        private void ProcessIncoming( List<int> ships, int maxDistance  )
+        private void ProcessIncoming( List<int> ships, int maxDistance )
         {
             for ( int x = 0; x < ships.Count; x++ )
             {
@@ -2873,7 +2876,7 @@ namespace SKCivilianIndustry
                         // We're here. The AI should release all of its forces to fight us.
                         BadgerFactionUtilityMethods.FlushUnitsFromReinforcementPoints( assessment.Target, faction, Context );
                         // Let the player know we're doing something, if our forces would matter.
-                        if ( faction.Ex_MinorFactionCommon_GetPrimitives().Allegiance == "Player Team" && assessment.AttackPower > 5000 )
+                        if ( PlayerAligned && assessment.AttackPower > 5000 )
                         {
                             if ( !LastGameSecondForMessageAboutThisPlanet.GetHasKey( assessment.Target ) )
                                 LastGameSecondForMessageAboutThisPlanet.AddPair( assessment.Target, 0 );
