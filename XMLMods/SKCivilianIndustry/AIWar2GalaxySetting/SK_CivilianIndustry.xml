@@ -9,6 +9,10 @@
     default="125" min="100" max="500" changeable_during_gameplay="true"
     description="What percentage of forces does a group of militia need to attack a planet? Does not change defensive priorities or assisting player attacks."
   />
+  <galaxy_setting name="MilitiaAttackMinimumStrength" category="Civilians" display_name="Minimum Hostile Strength to Attack" type="IntSlider"
+    default="1" min="1" max="50" changeable_during_gameplay="true"
+    description="How much hostile Strength must there be on a planet for Civilians to consider attacking it?"
+  />
   <galaxy_setting name="DefensiveBattlestationForces" category="Civilians" display_name="Defensive Battlestation Forces" type="BoolToggle"
     default="false" changeable_during_gameplay="true"
     description="Should militia forces created for a Battlestation always stay on the Battlestation's planet?"

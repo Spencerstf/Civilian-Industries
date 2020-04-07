@@ -40,6 +40,7 @@ namespace SKCivilianIndustry
         public bool[] IgnoreResource;
         public double MilitiaStockpilePercentage;
         protected bool MilitiaExpandWithAllAllies;
+        protected int MilitiaAttackMinimumStrength;
 
         // Note: We clear all variables on the faction in the constructor.
         // This is the (current) best way to make sure data is not carried between saves, especially statics.
@@ -107,6 +108,7 @@ namespace SKCivilianIndustry
                 MilitiaStockpilePercentage = AIWar2GalaxySettingTable.Instance.GetRowByName( "MilitiaStockpilePercentage", false, null ).DefaultIntValue / 100.0;
                 MilitiaExpandWithAllAllies = false;
                 SettingsInitialized = true;
+                MilitiaAttackMinimumStrength = AIWar2GalaxySettingTable.Instance.GetRowByName( "MilitiaAttackMinimumStrength", false, null ).DefaultIntValue * 1000;
             }
             // Set relationships.
             switch ( faction.Ex_MinorFactionCommon_GetPrimitives().Allegiance )
@@ -131,6 +133,7 @@ namespace SKCivilianIndustry
                     DefensiveBattlestationForces = AIWar2GalaxySettingTable.GetIsBoolSettingEnabledByName_DuringGame( "DefensiveBattlestationForces" );
                     MilitiaStockpilePercentage = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaStockpilePercentage" ) / 100.0;
                     MilitiaExpandWithAllAllies = AIWar2GalaxySettingTable.GetIsBoolSettingEnabledByName_DuringGame( "MilitiaExpandWithAllAllies" );
+                    MilitiaAttackMinimumStrength = AIWar2GalaxySettingTable.GetIsIntValueFromSettingByName_DuringGame( "MilitiaAttackMinimumStrength" ) * 1000;
                     PlayerAligned = true;
                     break;
             }
@@ -2661,7 +2664,7 @@ namespace SKCivilianIndustry
                     centerpiece.Planet.DoForLinkedNeighbors( delegate ( Planet adjPlanet )
                     {
                         var threat = factionData.GetThreat( adjPlanet );
-                        if ( !factionData.IsPlanetFriendly( faction, adjPlanet ) && threat.Total > 1000 )
+                        if ( !factionData.IsPlanetFriendly( faction, adjPlanet ) && threat.Total > MilitiaAttackMinimumStrength )
                         {
                             int strength = 0;
                             for ( int y = 0; y < militiaData.Ships.Count; y++ )
@@ -2716,8 +2719,7 @@ namespace SKCivilianIndustry
                         } );
 
                         // If we don't yet have an assessment for the planet, and it has enough threat, add it.
-                        // Factor out planets that have already been covered by player units.
-                        if ( reinforcePoints > 0 || threat.Total > Math.Max( 1000, (threat.FriendlyMobile + threat.FriendlyGuard) / 3 ) )
+                        if ( reinforcePoints > 0 || threat.Total > MilitiaAttackMinimumStrength )
                         {
                             AttackAssessment adjAssessment = (from o in attackAssessments where o.Target.Index == adjPlanet.Index select o).FirstOrDefault();
                             if ( adjAssessment == null )
@@ -2974,11 +2976,10 @@ namespace SKCivilianIndustry
 
                             // If we're not home, and our current planet does not have threat that we think we can beat, return.
                             // If any of the following are true, return.
-                            // Current planet has no threat.
                             // Current planet has threat we can't beat.
                             // current planet is more than 1 hop away from our centerpiece.
                             if ( entity.Planet.Index != centerpiece.Planet.Index && entity.LongRangePlanningData.FinalDestinationIndex != centerpiece.Planet.Index &&
-                                (entity.Planet.GetHopsTo( centerpiece.Planet ) > 1 || threat.Total <= 1000 ||
+                                (entity.Planet.GetHopsTo( centerpiece.Planet ) > 1 ||
                                 threat.MilitiaMobile + threat.MilitiaGuard + threat.FriendlyGuard + threat.FriendlyMobile < threat.Total * MilitiaAttackOverkillPercentage) )
                             {
                                 QueueWormholeCommand( entity, centerpiece.Planet );
