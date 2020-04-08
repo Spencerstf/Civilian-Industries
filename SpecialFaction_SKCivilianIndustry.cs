@@ -3113,7 +3113,7 @@ namespace SKCivilianIndustry
                     List<GameEntity_Squad> entities = destinationPair.Value;
                     if ( entities == null )
                         continue;
-                    List<Planet> path = faction.FindPath( origin, destination, Context );
+                    List<Planet> path = faction.FindPath( origin, destination, PathingMode.Safest, Context );
                     GameCommand command = GameCommand.Create( GameCommandTypeTable.Instance.GetRowByName( "SetWormholePath_CivilianIndustryBulk", false, null ), GameCommandSource.AnythingElse );
                     for ( int p = 0; p < path.Count; p++ )
                         command.RelatedIntegers.Add( path[p].Index );
@@ -3209,7 +3209,7 @@ namespace SKCivilianIndustry
         }
 
         // Check for our stuff dying.
-        public override void DoOnAnyDeathLogic( GameEntity_Squad entity, EntitySystem FiringSystemOrNull, ArcenSimContext Context )
+        public override void DoOnAnyDeathLogic( GameEntity_Squad entity, bool WasFromSelfDamage, EntitySystem FiringSystemOrNull, ArcenSimContext Context )
         {
             // Skip if the ship was not defined by our mod.
             // Things like spawnt patrol ships and turrets don't need to be processed for death here.
