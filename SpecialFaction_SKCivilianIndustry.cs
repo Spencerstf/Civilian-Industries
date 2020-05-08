@@ -210,13 +210,11 @@ namespace SKCivilianIndustry
             else if ( !PlayerAligned )
             {
                 // Not player or ai, see if they have a 'safe' planet for us to spawn on.
-                Galaxy galaxy = World_AIW2.Instance.Galaxies[0];
-                for ( int x = 0; x < galaxy.Planets.Count; x++ )
+                World_AIW2.Instance.DoForPlanets( false, workingPlanet =>
                 {
-                    Planet workingPlanet = galaxy.Planets[x];
                     LongRangePlanningData_PlanetFaction workingData = workingPlanet.LongRangePlanningData.PlanetFactionDataByIndex[alignedFaction.FactionIndex];
                     if ( workingData == null )
-                        break;
+                        return DelReturn.Break;
                     if ( workingData.DataByStance[FactionStance.Self].TotalStrength / 2 > workingData.DataByStance[FactionStance.Hostile].TotalStrength )
                     {
                         // Found a planet that they have majority control over. Spawn around a strong stationary friendly unit.
@@ -259,7 +257,7 @@ namespace SKCivilianIndustry
                         } );
 
                         if ( bestEntity == null )
-                            continue;
+                            return DelReturn.Continue;
 
                         // Load in our Grand Station's TypeData.
                         GameEntityTypeData entityData = GameEntityTypeDataTable.Instance.GetRandomRowWithTag( Context, "GrandStation" );
@@ -286,9 +284,10 @@ namespace SKCivilianIndustry
                         // Add in our grand station to our faction's data
                         factionData.GrandStation = grandStation.PrimaryKeyID;
 
-                        return;
+                        return DelReturn.Break;
                     }
-                }
+                    return DelReturn.Continue;
+                } );
             }
         }
 
@@ -376,11 +375,8 @@ namespace SKCivilianIndustry
             {
                 // Not player or ai. 
                 // If this industry is not friendly to the player, or the player requested it, have civilians expand with other factions.
-                Galaxy galaxy = World_AIW2.Instance.Galaxies[0];
-                for ( int x = 0; x < galaxy.Planets.Count; x++ )
+                World_AIW2.Instance.DoForPlanets( false, workingPlanet =>
                 {
-                    Planet workingPlanet = galaxy.Planets[x];
-
                     // Skip if we already have a trade station on the planet.
                     bool alreadyBuilt = false;
                     for ( int y = 0; y < factionData.TradeStations.Count; y++ )
@@ -396,11 +392,11 @@ namespace SKCivilianIndustry
                     }
 
                     if ( alreadyBuilt )
-                        continue;
+                        return DelReturn.Continue;
 
                     LongRangePlanningData_PlanetFaction workingData = workingPlanet.LongRangePlanningData.PlanetFactionDataByIndex[alignedFaction.FactionIndex];
                     if ( workingData == null )
-                        break;
+                        return DelReturn.Break;
                     if ( workingData.DataByStance[FactionStance.Self].TotalStrength / 2 > workingData.DataByStance[FactionStance.Hostile].TotalStrength )
                     {
                         // Found a planet that they have majority control over. Spawn around a stationary friendly unit.
@@ -443,7 +439,7 @@ namespace SKCivilianIndustry
                         } );
 
                         if ( bestEntity == null )
-                            continue;
+                            return DelReturn.Continue;
 
                         // No trade station found for this planet. Create one.
                         // Load in our trade station's data.
@@ -491,7 +487,8 @@ namespace SKCivilianIndustry
                         if ( factionData.TradeStationRebuildTimerInSecondsByPlanet.ContainsKey( bestEntity.Planet.Index ) )
                             factionData.TradeStationRebuildTimerInSecondsByPlanet.Remove( bestEntity.Planet.Index );
                     }
-                }
+                    return DelReturn.Continue;
+                } );
             }
         }
 
@@ -1090,7 +1087,7 @@ namespace SKCivilianIndustry
 
                 // See if any wormholes are still unassigned.
                 GameEntity_Other foundWormhole = null;
-                factionData.ThreatReports[x].Planet.DoForLinkedNeighbors( delegate ( Planet otherPlanet )
+                factionData.ThreatReports[x].Planet.DoForLinkedNeighbors( false, delegate ( Planet otherPlanet )
                 {
                     // Get its wormhole.
                     GameEntity_Other wormhole = factionData.ThreatReports[x].Planet.GetWormholeTo( otherPlanet );
@@ -1644,7 +1641,7 @@ namespace SKCivilianIndustry
                     return;
 
                 // Set up raiding wormholes.
-                targetStation.Planet.DoForLinkedNeighborsAndSelf( delegate ( Planet planet )
+                targetStation.Planet.DoForLinkedNeighborsAndSelf( false, delegate ( Planet planet )
                 {
                     // Toss down 2-4 wormholes.
                     int count = Context.RandomToUse.Next( 2, 5 );
@@ -1993,10 +1990,8 @@ namespace SKCivilianIndustry
             if ( grandPlanet == null )
                 return;
 
-            for ( int x = 0; x < World_AIW2.Instance.Galaxies[0].Planets.Count; x++ )
+            World_AIW2.Instance.DoForPlanets( false, planet =>
             {
-                Planet planet = World_AIW2.Instance.Galaxies[0].Planets[x];
-
                 // Prepare variables to hold our soon to be detected threat values.
                 int friendlyMobileStrength = 0, friendlyGuardStrength = 0, cloakedHostileStrength = 0, nonCloakedHostileStrength = 0, militiaMobileStrength = 0, militiaGuardStrength = 0, waveStrength = 0;
                 // Wave detection.
@@ -2034,7 +2029,7 @@ namespace SKCivilianIndustry
                 // Adjacent planet threat matters as well, but not as much as direct threat.
                 // We'll only add it if the planet has no friendly forces on it.
                 if ( factionData.IsPlanetFriendly( faction, planet ) )
-                    planet.DoForLinkedNeighbors( delegate ( Planet linkedPlanet )
+                    planet.DoForLinkedNeighbors( false, delegate ( Planet linkedPlanet )
                     {
                         if ( factionData.IsPlanetFriendly( faction, linkedPlanet ) )
                             return DelReturn.Continue;
@@ -2072,7 +2067,8 @@ namespace SKCivilianIndustry
 
                 // Save our threat value.
                 factionData.ThreatReports.Add( new ThreatReport( planet, militiaGuardStrength, militiaMobileStrength, friendlyGuardStrength, friendlyMobileStrength, cloakedHostileStrength, nonCloakedHostileStrength, waveStrength ) );
-            }
+                return DelReturn.Continue;
+            } );
             // Sort our reports.
             factionData.ThreatReports.Sort();
         }
@@ -2661,7 +2657,7 @@ namespace SKCivilianIndustry
                     if ( raidStrength.ContainsKey( centerpiece.Planet ) )
                         val = raidStrength[centerpiece.Planet];
                     // If we have at least one planet adjacent to us that is hostile and threatening, add our patrol posts to the raiding pool.
-                    centerpiece.Planet.DoForLinkedNeighbors( delegate ( Planet adjPlanet )
+                    centerpiece.Planet.DoForLinkedNeighbors( false, delegate ( Planet adjPlanet )
                     {
                         var threat = factionData.GetThreat( adjPlanet );
                         if ( !factionData.IsPlanetFriendly( faction, adjPlanet ) && threat.Total > MilitiaAttackMinimumStrength )
@@ -2701,7 +2697,7 @@ namespace SKCivilianIndustry
 
                 foreach ( KeyValuePair<Planet, int> raidingPlanet in raidStrength )
                 {
-                    raidingPlanet.Key.DoForLinkedNeighbors( delegate ( Planet adjPlanet )
+                    raidingPlanet.Key.DoForLinkedNeighbors( false, delegate ( Planet adjPlanet )
                     {
                         // If friendly, skip.
                         if ( factionData.IsPlanetFriendly( faction, adjPlanet ) )
@@ -2997,22 +2993,20 @@ namespace SKCivilianIndustry
         {
             // Count the number of militia barracks for each planet.
             Dictionary<Planet, int> barracksPerPlanet = new Dictionary<Planet, int>();
-            for ( int x = 0; x < World_AIW2.Instance.Galaxies[0].Planets.Count; x++ )
+            World_AIW2.Instance.DoForPlanets(false, planet =>
             {
+                planet.DoForEntities( EntityRollupType.SpecialTypes, delegate ( GameEntity_Squad building )
                 {
-                    Planet planet = World_AIW2.Instance.Galaxies[0].Planets[x];
-                    planet.DoForEntities( EntityRollupType.SpecialTypes, delegate ( GameEntity_Squad building )
-                    {
-                        if ( building.TypeData.SpecialType == SpecialEntityType.NPCFactionCenterpiece && building.TypeData.GetHasTag( "MilitiaBarracks" )
-                        && building.SelfBuildingMetalRemaining <= 0 && building.SecondsSpentAsRemains <= 0 )
-                            if ( barracksPerPlanet.ContainsKey( planet ) )
-                                barracksPerPlanet[planet]++;
-                            else
-                                barracksPerPlanet.Add( planet, 1 );
-                        return DelReturn.Continue;
-                    } );
-                }
-            }
+                    if ( building.TypeData.SpecialType == SpecialEntityType.NPCFactionCenterpiece && building.TypeData.GetHasTag( "MilitiaBarracks" )
+                    && building.SelfBuildingMetalRemaining <= 0 && building.SecondsSpentAsRemains <= 0 )
+                        if ( barracksPerPlanet.ContainsKey( planet ) )
+                            barracksPerPlanet[planet]++;
+                        else
+                            barracksPerPlanet.Add( planet, 1 );
+                    return DelReturn.Continue;
+                } );
+                return DelReturn.Continue;
+            } );
             // Handle once for each militia leader.
             for ( int x = 0; x < factionData.MilitiaLeaders.Count; x++ )
             {
@@ -3032,7 +3026,7 @@ namespace SKCivilianIndustry
                         GameEntityTypeData turretData = GameEntityTypeDataTable.Instance.GetRowByName( militiaStatus.ShipTypeData[y], false, null );
 
                         militiaStatus.ShipCapacity[y] = (factionData.GetCap( faction ) / (FInt.Create( turretData.GetForMark( faction.GetGlobalMarkLevelForShipLine( turretData ) ).StrengthPerSquad, true ) / 10)).GetNearestIntPreferringHigher();
-                        militiaShip.Planet.DoForLinkedNeighborsAndSelf( delegate ( Planet otherPlanet )
+                        militiaShip.Planet.DoForLinkedNeighborsAndSelf( false, delegate ( Planet otherPlanet )
                         {
                             if ( barracksPerPlanet.ContainsKey( otherPlanet ) )
                                 if ( turretData.MultiplierToAllFleetCaps == 0 )
@@ -3061,7 +3055,7 @@ namespace SKCivilianIndustry
                             continue;
                         }
                         militiaStatus.ShipCapacity[y] = (factionData.GetCap( faction ) / (FInt.Create( shipData.GetForMark( faction.GetGlobalMarkLevelForShipLine( shipData ) ).StrengthPerSquad, true ) / 10)).GetNearestIntPreferringHigher();
-                        militiaShip.Planet.DoForLinkedNeighborsAndSelf( delegate ( Planet otherPlanet )
+                        militiaShip.Planet.DoForLinkedNeighborsAndSelf( false, delegate ( Planet otherPlanet )
                         {
                             if ( barracksPerPlanet.ContainsKey( otherPlanet ) )
                                 for ( int z = 0; z < barracksPerPlanet[otherPlanet]; z++ )
@@ -3209,7 +3203,7 @@ namespace SKCivilianIndustry
         }
 
         // Check for our stuff dying.
-        public override void DoOnAnyDeathLogic( GameEntity_Squad entity, bool WasFromSelfDamage, EntitySystem FiringSystemOrNull, ArcenSimContext Context )
+        public override void DoOnAnyDeathLogic( GameEntity_Squad entity, DamageSource Damage, EntitySystem FiringSystemOrNull, ArcenSimContext Context )
         {
             // Skip if the ship was not defined by our mod.
             // Things like spawnt patrol ships and turrets don't need to be processed for death here.
