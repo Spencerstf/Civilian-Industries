@@ -1670,7 +1670,7 @@ namespace SKCivilianIndustry
                     return DelReturn.Continue;
                 } );
                 if ( PlayerAligned )
-                    World_AIW2.Instance.QueueLogMessageCommand( "The AI is preparing to raid cargo ships on planets near " + targetStation.Planet.Name, JournalEntryImportance.KeepLonger );
+                    World_AIW2.Instance.QueueChatMessageOrCommand( $"The AI is preparing to read cargo ships on planets near {targetStation.Planet.Name}.", ChatType.ShowToEveryone, Context );
 
                 // Start timer.
                 factionData.NextRaidInThisSeconds = 119;
@@ -1771,7 +1771,7 @@ namespace SKCivilianIndustry
 
             // Let the player know they're about to lose money.
             if ( PlayerAligned )
-                World_AIW2.Instance.QueueLogMessageCommand( "The AI has begun their raid.", JournalEntryImportance.KeepLonger );
+                World_AIW2.Instance.QueueChatMessageOrCommand( "The AI has begun their raid.", ChatType.ShowToEveryone, Context );
 
             // Reset raid information.
             factionData.NextRaidInThisSeconds = 1800;
@@ -1895,7 +1895,7 @@ namespace SKCivilianIndustry
                 {
                     var threat = factionData.GetThreat( planet );
                     if ( threat.CloakedHostile > threat.Total * 0.9 )
-                        BadgerFactionUtilityMethods.TachyonBlastPlanet( planet, faction );
+                        BadgerFactionUtilityMethods.TachyonBlastPlanet( planet, faction, Context, false );
                     LastGameSecondForLastTachyonBurstOnThisPlanet[planet] = World_AIW2.Instance.GameSecond;
                 }
             }
@@ -2886,7 +2886,7 @@ namespace SKCivilianIndustry
                                 LastGameSecondForMessageAboutThisPlanet.AddPair( assessment.Target, 0 );
                             if ( World_AIW2.Instance.GameSecond - LastGameSecondForMessageAboutThisPlanet[assessment.Target] > 30 )
                             {
-                                World_AIW2.Instance.QueueLogMessageCommand( "Civilian Militia are attacking " + assessment.Target.Name + ".", JournalEntryImportance.Normal, Context );
+                                World_AIW2.Instance.QueueChatMessageOrCommand( $"Civilian Militia are attacking {assessment.Target.Name}.", ChatType.ShowToEveryone, Context );
                                 LastGameSecondForMessageAboutThisPlanet[assessment.Target] = World_AIW2.Instance.GameSecond;
                             }
                         }
@@ -3157,6 +3157,8 @@ namespace SKCivilianIndustry
                     if ( destinationPair == null )
                         continue;
                     ArcenPoint destination = destinationPair.Key;
+                    if ( destination == ArcenPoint.ZeroZeroPoint )
+                        continue;
                     List<GameEntity_Squad> entities = destinationPair.Value;
                     if ( entities == null )
                         continue;
@@ -3168,7 +3170,7 @@ namespace SKCivilianIndustry
                         if ( entities != null && entity.LongRangePlanningData.DestinationPoint != destination )
                             command.RelatedEntityIDs.Add( entity.PrimaryKeyID );
                     }
-                    if ( command.RelatedEntityIDs.Count > 0 )
+                    if ( command.RelatedEntityIDs.Count > 0 && command.RelatedPoints.Count > 0 )
                         Context.QueueCommandForSendingAtEndOfContext( command );
                 }
             }

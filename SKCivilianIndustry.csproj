@@ -35,16 +35,28 @@
   <ItemGroup>
     <Reference Include="AIWarExternalCode, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\GameData\ModdableLogicDLLs\AIWarExternalCode.dll</HintPath>
+      <HintPath>..\ReliableDLLStorage\ArcenDLLs\AIWarExternalCode.dll</HintPath>
     </Reference>
-    <Reference Include="AIWarExternalVisualizationCode">
-      <HintPath>..\GameData\ModdableLogicDLLs\AIWarExternalVisualizationCode.dll</HintPath>
+    <Reference Include="AIWarExternalVisualizationCode, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ReliableDLLStorage\ArcenDLLs\AIWarExternalVisualizationCode.dll</HintPath>
     </Reference>
     <Reference Include="ArcenAIW2Core, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\ReliableDLLStorage\ArcenDLLs\ArcenAIW2Core.dll</HintPath>
     </Reference>
-    <Reference Include="ArcenUniversal, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="ArcenAIW2ThirdParty, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ReliableDLLStorage\ArcenDLLs\ArcenAIW2ThirdParty.dll</HintPath>
+    </Reference>
+    <Reference Include="ArcenAIW2Visualization, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ReliableDLLStorage\ArcenDLLs\ArcenAIW2Visualization.dll</HintPath>
+    </Reference>
+    <Reference Include="ArcenUniversal, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ReliableDLLStorage\ArcenDLLs\ArcenUniversal.dll</HintPath>
+    </Reference>
     <Reference Include="mscorlib">
       <HintPath>..\ReliableDLLStorage\mscorlib.dll</HintPath>
       <Private>False</Private>

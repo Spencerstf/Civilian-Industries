@@ -31,7 +31,7 @@
             priority_as_frd_target="MajorPlanetLevelObjective"
             priority_as_ai_target="MajorPlanetLevelObjective"
             priority_to_protect="MajorPlanetLevelObjective"
-            exp_to_grant_on_death="-1"
+            
             tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,Engineering"
     >
     </entity>
@@ -61,7 +61,7 @@
             priority_as_frd_target="MajorPlanetLevelObjective"
             priority_as_ai_target="MajorPlanetLevelObjective"
             priority_to_protect="IgnoreMe"
-            exp_to_grant_on_death="-1"
+            
             tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,MetalGeneration"
             description_appender_dll="SKCivilianIndustry"
             description_appender_type="SKCivilianIndustry.TradeStationDescriptionAppender"
@@ -109,7 +109,7 @@
             priority_as_ai_target="MinorResourceGeneration"
             priority_as_frd_target="MinorResourceGeneration"
             priority_to_protect="IgnoreMe"
-            exp_to_grant_on_death="-1"
+            
             tech_upgrades_that_benefit_me="MetalGeneration,Light"
             description_appender_dll="SKCivilianIndustry"
             description_appender_type="SKCivilianIndustry.CargoShipDescriptionAppender"
@@ -179,7 +179,7 @@
             priority_as_frd_target="MajorPlanetLevelObjective"
             priority_as_ai_target="MajorPlanetLevelObjective"
             priority_to_protect="IgnoreMe"
-            exp_to_grant_on_death="-1"
+            
             tech_upgrades_that_benefit_me="CommandEconomic,CommandLogistical,MetalGeneration"
             description_appender_dll="SKCivilianIndustry"
             description_appender_type="SKCivilianIndustry.MilitiaShipDescriptionAppender"
@@ -720,7 +720,7 @@
             ship_or_structure_explosion_sfx="StructureMidsize_Explosion"
             ship_or_structure_explosion_if_on_other_planet_sfx="StructureLostOnOtherPlanet_Explosion"
             ship_or_structure_explosion_sfx_happens_if_not_mine_and_on_other_planet="true"
-            exp_to_grant_on_death="-1"
+            
             priority_as_ai_target="BigThreateningWeapon" priority_as_frd_target="NotDangerous" priority_to_protect="BigFavoriteToy"
     />
 </root>
