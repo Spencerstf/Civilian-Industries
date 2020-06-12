@@ -1207,6 +1207,10 @@ namespace SKCivilianIndustry
         }
 
         // Handle militia deployment and unit building.
+        public void DoMilitiaPathingDeployment()
+        {
+
+        }
         public void DoMilitiaDeployment( Faction faction, ArcenSimContext Context )
         {
             Engine_Universal.NewTimingsBeingBuilt.StartRememberingFrame( FramePartTimings.TimingType.MainSimThreadNormal, "DoMilitiaDeployment" );
@@ -1805,16 +1809,18 @@ namespace SKCivilianIndustry
                     faction.InheritsTechUpgradesFromPlayerFactions = false;
                 faction.RecalculateMarkLevelsAndInheritedTechUnlocks();
 
-                int globalAIMark = BadgerFactionUtilityMethods.GetRandomAIFaction( Context ).CurrentGeneralMarkLevel;
+                byte globalAIMark = BadgerFactionUtilityMethods.GetRandomAIFaction( Context ).CurrentGeneralMarkLevel;
 
                 faction.Entities.DoForEntities( delegate ( GameEntity_Squad entity )
                 {
-                    int requestedMark = faction.GetGlobalMarkLevelForShipLine( entity.TypeData );
+                    byte requestedMark = faction.GetGlobalMarkLevelForShipLine( entity.TypeData );
                     if ( !PlayerAligned )
                     {
                         requestedMark = Math.Max( requestedMark, globalAIMark );
                         if ( !entity.TypeData.IsMobile )
                             requestedMark = Math.Max( requestedMark, entity.Planet.MarkLevelForAIOnly.Ordinal );
+                        else if ( World_AIW2.Instance.GetEntityByID_Squad( entity.MinorFactionStackingID ) != null )
+                            requestedMark = Math.Max( requestedMark, World_AIW2.Instance.GetEntityByID_Squad( entity.MinorFactionStackingID ).Planet.MarkLevelForAIOnly.Ordinal );
                     }
                     entity.SetCurrentMarkLevelIfHigherThanCurrent( requestedMark, Context );
                     return DelReturn.Continue;
@@ -2406,7 +2412,7 @@ namespace SKCivilianIndustry
                 }
                 else
                 {
-                    if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationIndex != -1 )
+                    if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationPlanetIndex != -1 )
                         continue; // Stop if already enroute.
 
                     // Not on planet yet, prepare wormhole navigation.
@@ -2442,7 +2448,7 @@ namespace SKCivilianIndustry
                 }
                 else
                 {
-                    if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationIndex != -1 )
+                    if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationPlanetIndex != -1 )
                         continue; // Stop if already moving.
 
                     // Not on planet yet, queue a wormhole movement command.
@@ -2504,7 +2510,7 @@ namespace SKCivilianIndustry
                     else
                     {
                         // Not on planet yet, prepare wormhole navigation.
-                        if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationIndex != -1 )
+                        if ( ship.LongRangePlanningData != null && ship.LongRangePlanningData.FinalDestinationPlanetIndex != -1 )
                             continue; // Stop if we're already enroute.
 
                         QueueWormholeCommand( ship, planet );
@@ -2625,19 +2631,19 @@ namespace SKCivilianIndustry
                             if ( centerpiece.PrimaryKeyID == entity.PrimaryKeyID )
                                 continue;
 
-                            if ( entity.Planet.Index == targetPlanet.Index && entity.LongRangePlanningData.FinalDestinationIndex != -1 &&
-                                entity.LongRangePlanningData.FinalDestinationIndex != targetPlanet.Index )
+                            if ( entity.Planet.Index == targetPlanet.Index && entity.LongRangePlanningData.FinalDestinationPlanetIndex != -1 &&
+                                entity.LongRangePlanningData.FinalDestinationPlanetIndex != targetPlanet.Index )
                             {
                                 // We're on our target planet, but for some reason we're trying to leave it. Stop.
                                 entity.Orders.ClearOrders( ClearBehavior.DoNotClearBehaviors, ClearDecollisionOnParent.DoNotClearDecollision, ClearSource.YesClearAnyOrders_IncludingFromHumans );
                             }
 
-                            if ( entity.Planet.Index != targetPlanet.Index && entity.LongRangePlanningData.FinalDestinationIndex != targetPlanet.Index )
+                            if ( entity.Planet.Index != targetPlanet.Index && entity.LongRangePlanningData.FinalDestinationPlanetIndex != targetPlanet.Index )
                             {
                                 if ( entity.Planet.Index != centerpiece.Planet.Index )
                                 {
                                     // Not yet on our target planet, and we're not yet on our centerpiece planet. Path to our centerpiece planet first.
-                                    if ( entity.LongRangePlanningData.FinalDestinationIndex == centerpiece.Planet.Index )
+                                    if ( entity.LongRangePlanningData.FinalDestinationPlanetIndex == centerpiece.Planet.Index )
                                         continue; // Stop if already moving towards it.
 
                                     QueueWormholeCommand( entity, centerpiece.Planet );
@@ -2829,7 +2835,7 @@ namespace SKCivilianIndustry
                             if ( entity.Planet.Index != centerpiece.Planet.Index )
                             {
                                 notReady++;
-                                if ( entity.LongRangePlanningData.FinalDestinationIndex != centerpiece.Planet.Index )
+                                if ( entity.LongRangePlanningData.FinalDestinationPlanetIndex != centerpiece.Planet.Index )
                                 {
                                     QueueWormholeCommand( entity, centerpiece.Planet );
                                 }
@@ -2904,12 +2910,12 @@ namespace SKCivilianIndustry
                                 if ( centerpiece.PrimaryKeyID == entity.PrimaryKeyID )
                                     continue;
 
-                                if ( entity.Planet.Index != assessment.Target.Index && entity.LongRangePlanningData.FinalDestinationIndex != assessment.Target.Index )
+                                if ( entity.Planet.Index != assessment.Target.Index && entity.LongRangePlanningData.FinalDestinationPlanetIndex != assessment.Target.Index )
                                 {
                                     if ( entity.Planet.Index != centerpiece.Planet.Index )
                                     {
                                         // Not yet on our target planet, and we're not yet on our centerpiece planet. Path to our centerpiece planet first.
-                                        if ( entity.LongRangePlanningData.FinalDestinationIndex == centerpiece.Planet.Index )
+                                        if ( entity.LongRangePlanningData.FinalDestinationPlanetIndex == centerpiece.Planet.Index )
                                             continue; // Stop if already moving towards it.
 
                                         QueueWormholeCommand( entity, centerpiece.Planet );
@@ -2974,7 +2980,7 @@ namespace SKCivilianIndustry
                             // If any of the following are true, return.
                             // Current planet has threat we can't beat.
                             // current planet is more than 1 hop away from our centerpiece.
-                            if ( entity.Planet.Index != centerpiece.Planet.Index && entity.LongRangePlanningData.FinalDestinationIndex != centerpiece.Planet.Index &&
+                            if ( entity.Planet.Index != centerpiece.Planet.Index && entity.LongRangePlanningData.FinalDestinationPlanetIndex != centerpiece.Planet.Index &&
                                 (entity.Planet.GetHopsTo( centerpiece.Planet ) > 1 ||
                                 threat.MilitiaMobile + threat.MilitiaGuard + threat.FriendlyGuard + threat.FriendlyMobile < threat.Total * MilitiaAttackOverkillPercentage) )
                             {
@@ -2993,20 +2999,20 @@ namespace SKCivilianIndustry
         {
             // Count the number of militia barracks for each planet.
             Dictionary<Planet, int> barracksPerPlanet = new Dictionary<Planet, int>();
-            World_AIW2.Instance.DoForPlanets(false, planet =>
-            {
-                planet.DoForEntities( EntityRollupType.SpecialTypes, delegate ( GameEntity_Squad building )
-                {
-                    if ( building.TypeData.SpecialType == SpecialEntityType.NPCFactionCenterpiece && building.TypeData.GetHasTag( "MilitiaBarracks" )
-                    && building.SelfBuildingMetalRemaining <= 0 && building.SecondsSpentAsRemains <= 0 )
-                        if ( barracksPerPlanet.ContainsKey( planet ) )
-                            barracksPerPlanet[planet]++;
-                        else
-                            barracksPerPlanet.Add( planet, 1 );
-                    return DelReturn.Continue;
-                } );
-                return DelReturn.Continue;
-            } );
+            World_AIW2.Instance.DoForPlanets( false, planet =>
+             {
+                 planet.DoForEntities( EntityRollupType.SpecialTypes, delegate ( GameEntity_Squad building )
+                 {
+                     if ( building.TypeData.SpecialType == SpecialEntityType.NPCFactionCenterpiece && building.TypeData.GetHasTag( "MilitiaBarracks" )
+                     && building.SelfBuildingMetalRemaining <= 0 && building.SecondsSpentAsRemains <= 0 )
+                         if ( barracksPerPlanet.ContainsKey( planet ) )
+                             barracksPerPlanet[planet]++;
+                         else
+                             barracksPerPlanet.Add( planet, 1 );
+                     return DelReturn.Continue;
+                 } );
+                 return DelReturn.Continue;
+             } );
             // Handle once for each militia leader.
             for ( int x = 0; x < factionData.MilitiaLeaders.Count; x++ )
             {
@@ -3025,7 +3031,7 @@ namespace SKCivilianIndustry
 
                         GameEntityTypeData turretData = GameEntityTypeDataTable.Instance.GetRowByName( militiaStatus.ShipTypeData[y], false, null );
 
-                        militiaStatus.ShipCapacity[y] = (factionData.GetCap( faction ) / (FInt.Create( turretData.GetForMark( faction.GetGlobalMarkLevelForShipLine( turretData ) ).StrengthPerSquad, true ) / 10)).GetNearestIntPreferringHigher();
+                        militiaStatus.ShipCapacity[y] = (factionData.GetCap( faction ) / (FInt.Create( turretData.GetForMark( faction.GetGlobalMarkLevelForShipLine( turretData ) ).StrengthPerSquad_Original_DoesNotIncreaseWithMarkLevel, true ) / 10)).GetNearestIntPreferringHigher();
                         militiaShip.Planet.DoForLinkedNeighborsAndSelf( false, delegate ( Planet otherPlanet )
                         {
                             if ( barracksPerPlanet.ContainsKey( otherPlanet ) )
@@ -3054,7 +3060,7 @@ namespace SKCivilianIndustry
                             militiaStatus.ShipCapacity[y] = 1;
                             continue;
                         }
-                        militiaStatus.ShipCapacity[y] = (factionData.GetCap( faction ) / (FInt.Create( shipData.GetForMark( faction.GetGlobalMarkLevelForShipLine( shipData ) ).StrengthPerSquad, true ) / 10)).GetNearestIntPreferringHigher();
+                        militiaStatus.ShipCapacity[y] = (factionData.GetCap( faction ) / (FInt.Create( shipData.GetForMark( faction.GetGlobalMarkLevelForShipLine( shipData ) ).StrengthPerSquad_Original_DoesNotIncreaseWithMarkLevel, true ) / 10)).GetNearestIntPreferringHigher();
                         militiaShip.Planet.DoForLinkedNeighborsAndSelf( false, delegate ( Planet otherPlanet )
                         {
                             if ( barracksPerPlanet.ContainsKey( otherPlanet ) )
@@ -3114,7 +3120,7 @@ namespace SKCivilianIndustry
                     for ( int z = 0; z < entities.Count; z++ )
                     {
                         GameEntity_Squad entity = entities[z];
-                        if ( entity != null && entity.LongRangePlanningData.FinalDestinationIndex != destination.Index )
+                        if ( entity != null && entity.LongRangePlanningData.FinalDestinationPlanetIndex != destination.Index )
                             command.RelatedEntityIDs.Add( entity.PrimaryKeyID );
                     }
                     if ( command.RelatedEntityIDs.Count > 0 )

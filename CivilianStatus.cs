@@ -42,22 +42,22 @@ namespace SKCivilianIndustry
         /// <param name="Buffer"></param>
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
-            Buffer.AddItem(2);
-            Buffer.AddItem(this.Origin);
-            Buffer.AddItem(this.Destination);
-            Buffer.AddItem(this.LoadTimer);
+            Buffer.AddInt32( ReadStyle.NonNeg, 2 );
+            Buffer.AddInt32( ReadStyle.Signed, this.Origin );
+            Buffer.AddInt32( ReadStyle.Signed, this.Destination );
+            Buffer.AddInt32( ReadStyle.Signed, this.LoadTimer );
         }
         /// <summary>
         /// Loading our data. Make sure the loading order is the same as the saving order.
         /// </summary>
         public CivilianStatus(ArcenDeserializationBuffer Buffer)
         {
-            this.Version = Buffer.ReadInt32();
+            this.Version = Buffer.ReadInt32(ReadStyle.NonNeg );
             if ( this.Version < 2 )
-                Buffer.ReadInt32();
-            this.Origin = Buffer.ReadInt32();
-            this.Destination = Buffer.ReadInt32();
-            this.LoadTimer = Buffer.ReadInt32();
+                Buffer.ReadInt32(ReadStyle.Signed);
+            this.Origin = Buffer.ReadInt32(ReadStyle.Signed);
+            this.Destination = Buffer.ReadInt32(ReadStyle.Signed);
+            this.LoadTimer = Buffer.ReadInt32(ReadStyle.Signed);
         }
     }
 }

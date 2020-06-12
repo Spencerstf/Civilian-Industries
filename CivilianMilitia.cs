@@ -29,7 +29,7 @@ namespace SKCivilianIndustry
         /// The planet that this fleet is focused on.
         /// It will only interact to hostile forces on or adjacent to this.
         /// </summary>
-        public int PlanetFocus;
+        public short PlanetFocus;
 
         /// <summary>
         /// Wormhole that this fleet has been asigned to. If -1 then it will instead find an unclaimed mine on the planet.
@@ -98,24 +98,24 @@ namespace SKCivilianIndustry
         /// <param name="Buffer"></param>
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
-            Buffer.AddItem(1);
-            Buffer.AddItem(this.Centerpiece);
-            Buffer.AddItem((int)this.Status);
-            Buffer.AddItem(this.PlanetFocus);
-            Buffer.AddItem(this.EntityFocus);
+            Buffer.AddInt32( ReadStyle.NonNeg, 2 );
+            Buffer.AddInt32( ReadStyle.Signed, this.Centerpiece );
+            Buffer.AddByte( ReadStyleByte.Normal, (byte)this.Status );
+            Buffer.AddInt16( ReadStyle.Signed, this.PlanetFocus );
+            Buffer.AddInt32( ReadStyle.Signed, this.EntityFocus );
             int count = (int)CivilianResource.Length;
-            Buffer.AddItem(count);
+            Buffer.AddInt32( ReadStyle.NonNeg, count );
             for (int x = 0; x < count; x++)
             {
                 Buffer.AddItem(this.ShipTypeData[x]);
                 int subCount = this.Ships[x].Count;
-                Buffer.AddItem(subCount);
-                for (int y = 0; y < subCount; y++)
-                    Buffer.AddItem(this.Ships[x][y]);
-                Buffer.AddItem(this.ShipCapacity[x]);
+                Buffer.AddInt32( ReadStyle.NonNeg, subCount );
+                for ( int y = 0; y < subCount; y++ )
+                    Buffer.AddInt32( ReadStyle.NonNeg, this.Ships[x][y] );
+                Buffer.AddInt32( ReadStyle.NonNeg, this.ShipCapacity[x] );
             }
-            Buffer.AddItem(this.CostMultiplier);
-            Buffer.AddItem(this.CapMultiplier);
+            Buffer.AddInt32( ReadStyle.NonNeg, this.CostMultiplier );
+            Buffer.AddInt32( ReadStyle.NonNeg, this.CapMultiplier );   
         }
 
         /// <summary>
@@ -124,20 +124,23 @@ namespace SKCivilianIndustry
         /// <param name="Buffer"></param>
         public CivilianMilitia(ArcenDeserializationBuffer Buffer)
         {
-            this.Version = Buffer.ReadInt32();
-            this.Centerpiece = Buffer.ReadInt32();
-            this.Status = (CivilianMilitiaStatus)Buffer.ReadInt32();
-            this.PlanetFocus = Buffer.ReadInt32();
-            this.EntityFocus = Buffer.ReadInt32();
-            int count = Buffer.ReadInt32();
+            this.Version = Buffer.ReadInt32(ReadStyle.NonNeg );
+            this.Centerpiece = Buffer.ReadInt32(ReadStyle.Signed);
+            this.Status = (CivilianMilitiaStatus)Buffer.ReadByte( ReadStyleByte.Normal );
+            if ( this.Version < 2 )
+                this.PlanetFocus = (short)Buffer.ReadInt32( ReadStyle.Signed );
+            else
+                this.PlanetFocus = Buffer.ReadInt16( ReadStyle.Signed );
+            this.EntityFocus = Buffer.ReadInt32(ReadStyle.Signed);
+            int count = Buffer.ReadInt32(ReadStyle.NonNeg );
             for (int x = 0; x < count; x++)
             {
                 this.ShipTypeData.Add(x, Buffer.ReadString());
                 this.Ships[x] = new List<int>();
-                int subCount = Buffer.ReadInt32();
+                int subCount = Buffer.ReadInt32(ReadStyle.NonNeg );
                 for (int y = 0; y < subCount; y++)
-                    this.Ships[x].Add(Buffer.ReadInt32());
-                this.ShipCapacity[x] = Buffer.ReadInt32();
+                    this.Ships[x].Add(Buffer.ReadInt32(ReadStyle.NonNeg ) );
+                this.ShipCapacity[x] = Buffer.ReadInt32(ReadStyle.NonNeg );
             }
             if (this.ShipTypeData.Count < (int)CivilianResource.Length)
             {
@@ -148,8 +151,8 @@ namespace SKCivilianIndustry
                     this.ShipCapacity.Add(x, 0);
                 }
             }
-            this.CostMultiplier = Buffer.ReadInt32();
-            this.CapMultiplier = Buffer.ReadInt32();
+            this.CostMultiplier = Buffer.ReadInt32(ReadStyle.NonNeg );
+            this.CapMultiplier = Buffer.ReadInt32(ReadStyle.NonNeg );
         }
 
         public GameEntity_Squad getMine()

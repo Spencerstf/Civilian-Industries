@@ -134,8 +134,8 @@ namespace SKCivilianIndustry
             int intensity = faction.Ex_MinorFactionCommon_GetPrimitives().Intensity;
             int flatBonus = 3 * intensity;
             double intensityMult = 1.25 + (0.025 * intensity);
-            double stationMult = Math.Pow(5.0 * TradeStations.Count, 0.9);
-            double scalingBonus = Math.Pow(stationMult, intensityMult);
+            double stationMult = Math.Pow( 5.0 * TradeStations.Count, 0.9 );
+            double scalingBonus = Math.Pow( stationMult, intensityMult );
             int cap = (int)(Math.Ceiling( baseCap + flatBonus + scalingBonus ));
             return cap;
         }
@@ -174,7 +174,7 @@ namespace SKCivilianIndustry
         /// </summary>
         /// <param name="cargoShipID">The PrimaryKeyID of the ship to modify.</param>
         /// <param name="status">The status to change to. Idle, Loading, Unloading, Building, Pathing, or Enroute</param>
-        public void ChangeCargoShipStatus(GameEntity_Squad cargoShip, string status )
+        public void ChangeCargoShipStatus( GameEntity_Squad cargoShip, string status )
         {
             int cargoShipID = cargoShip.PrimaryKeyID;
             if ( !this.CargoShips.Contains( cargoShipID ) )
@@ -278,25 +278,25 @@ namespace SKCivilianIndustry
             // Get the number of items in the list, and store that as well.
             // This is so you know how many items you'll have to load later.
             int count = list.Count;
-            Buffer.AddItem( count );
+            Buffer.AddInt32( ReadStyle.NonNeg, count );
             for ( int x = 0; x < count; x++ )
-                Buffer.AddItem( list[x] );
+                Buffer.AddInt32( ReadStyle.Signed, list[x] );
         }
         private void SerializeDictionary( Dictionary<int, int> dict, ArcenSerializationBuffer Buffer )
         {
-            Buffer.AddItem( dict.Count );
+            Buffer.AddInt32( ReadStyle.NonNeg, dict.Count );
             foreach ( int key in dict.Keys )
             {
-                Buffer.AddItem( key );
-                Buffer.AddItem( dict[key] );
+                Buffer.AddInt32( ReadStyle.NonNeg, key );
+                Buffer.AddInt32( ReadStyle.Signed, dict[key] );
             }
         }
         // Saving our data.
         public void SerializeTo( ArcenSerializationBuffer Buffer )
         {
-            Buffer.AddItem( 2 );
-            Buffer.AddItem( this.GrandStation );
-            Buffer.AddItem( this.GrandStationRebuildTimerInSeconds );
+            Buffer.AddInt32( ReadStyle.NonNeg, 2 );
+            Buffer.AddInt32( ReadStyle.Signed, this.GrandStation );
+            Buffer.AddInt32( ReadStyle.Signed, this.GrandStationRebuildTimerInSeconds );
             SerializeList( TradeStations, Buffer );
             SerializeDictionary( TradeStationRebuildTimerInSecondsByPlanet, Buffer );
             SerializeList( CargoShips, Buffer );
@@ -307,11 +307,11 @@ namespace SKCivilianIndustry
             SerializeList( CargoShipsBuilding, Buffer );
             SerializeList( CargoShipsPathing, Buffer );
             SerializeList( CargoShipsEnroute, Buffer );
-            Buffer.AddItem( this.BuildCounter );
-            Buffer.AddItem( this.FailedCounter.Import );
-            Buffer.AddItem( this.FailedCounter.Export );
-            Buffer.AddItem( this.MilitiaCounter );
-            Buffer.AddItem( this.NextRaidInThisSeconds );
+            Buffer.AddInt32( ReadStyle.Signed, this.BuildCounter );
+            Buffer.AddInt32( ReadStyle.NonNeg, this.FailedCounter.Import );
+            Buffer.AddInt32( ReadStyle.NonNeg, this.FailedCounter.Export );
+            Buffer.AddInt32( ReadStyle.Signed, this.MilitiaCounter );
+            Buffer.AddInt32( ReadStyle.Signed, this.NextRaidInThisSeconds );
             SerializeList( this.NextRaidWormholes, Buffer );
         }
         // Deserialize a list.
@@ -321,20 +321,20 @@ namespace SKCivilianIndustry
             // We'll have saved the number of items stored up above to be used here to determine the number of items to load.
             // ADDITIONALLY we'll need to recreate a blank list beforehand, as loading does not call the Initialization function.
             // Can't add values to a list that doesn't exist, after all.
-            int count = Buffer.ReadInt32();
+            int count = Buffer.ReadInt32( ReadStyle.NonNeg );
             List<int> newList = new List<int>();
             for ( int x = 0; x < count; x++ )
-                newList.Add( Buffer.ReadInt32() );
+                newList.Add( Buffer.ReadInt32( ReadStyle.Signed ) );
             return newList;
         }
         public Dictionary<int, int> DeserializeDictionary( ArcenDeserializationBuffer Buffer )
         {
-            int count = Buffer.ReadInt32();
+            int count = Buffer.ReadInt32( ReadStyle.NonNeg );
             Dictionary<int, int> newDict = new Dictionary<int, int>();
             for ( int x = 0; x < count; x++ )
             {
-                int key = Buffer.ReadInt32();
-                int value = Buffer.ReadInt32();
+                int key = Buffer.ReadInt32( ReadStyle.NonNeg );
+                int value = Buffer.ReadInt32( ReadStyle.Signed );
                 if ( !newDict.ContainsKey( key ) )
                     newDict.Add( key, value );
                 else
@@ -345,9 +345,9 @@ namespace SKCivilianIndustry
         // Loading our data. Make sure the loading order is the same as the saving order.
         public CivilianFaction( ArcenDeserializationBuffer Buffer )
         {
-            this.Version = Buffer.ReadInt32();
-            this.GrandStation = Buffer.ReadInt32();
-            this.GrandStationRebuildTimerInSeconds = Buffer.ReadInt32();
+            this.Version = Buffer.ReadInt32( ReadStyle.NonNeg );
+            this.GrandStation = Buffer.ReadInt32( ReadStyle.Signed );
+            this.GrandStationRebuildTimerInSeconds = Buffer.ReadInt32( ReadStyle.Signed );
             this.TradeStations = DeserializeList( Buffer );
             this.TradeStationRebuildTimerInSecondsByPlanet = DeserializeDictionary( Buffer );
             this.CargoShips = DeserializeList( Buffer );
@@ -358,13 +358,13 @@ namespace SKCivilianIndustry
             this.CargoShipsBuilding = DeserializeList( Buffer );
             this.CargoShipsPathing = DeserializeList( Buffer );
             this.CargoShipsEnroute = DeserializeList( Buffer );
-            this.BuildCounter = Buffer.ReadInt32();
+            this.BuildCounter = Buffer.ReadInt32( ReadStyle.Signed );
             if ( this.Version >= 2 )
-                this.FailedCounter = (Buffer.ReadInt32(), Buffer.ReadInt32());
+                this.FailedCounter = (Buffer.ReadInt32( ReadStyle.NonNeg ), Buffer.ReadInt32( ReadStyle.NonNeg ));
             else
                 this.FailedCounter = (0, 0);
-            this.MilitiaCounter = Buffer.ReadInt32();
-            this.NextRaidInThisSeconds = Buffer.ReadInt32();
+            this.MilitiaCounter = Buffer.ReadInt32( ReadStyle.Signed );
+            this.NextRaidInThisSeconds = Buffer.ReadInt32( ReadStyle.Signed );
             this.NextRaidWormholes = DeserializeList( Buffer );
 
             // Recreate an empty list on load. Will be populated when needed.

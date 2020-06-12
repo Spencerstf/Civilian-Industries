@@ -32,8 +32,8 @@ namespace SKCivilianIndustry
         /// </summary>
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
-            Buffer.AddItem(1);
-            Buffer.AddItem(GeneratedResources);
+            Buffer.AddInt32( ReadStyle.NonNeg, 1 );
+            Buffer.AddItem( GeneratedResources );
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace SKCivilianIndustry
         /// <param name="Buffer"></param>
         public CivilianWorld(ArcenDeserializationBuffer Buffer)
         {
-            Version = Buffer.ReadInt32();
+            Version = Buffer.ReadInt32(ReadStyle.NonNeg );
             this.GeneratedResources = Buffer.ReadBool();
         }
     }

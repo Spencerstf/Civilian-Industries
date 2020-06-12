@@ -46,18 +46,18 @@ namespace SKCivilianIndustry
         /// <param name="Buffer"></param>
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
-            Buffer.AddItem(1);
+            Buffer.AddInt32( ReadStyle.NonNeg, 1 );
             // Arrays
             // Get the number of items in the list, and store that as well.
             // This is so you know how many items you'll have to load later.
             // As we have one entry for each resource, we'll only have to get the count once.
             int count = this.Amount.Length;
-            Buffer.AddItem(count);
+            Buffer.AddInt32( ReadStyle.NonNeg, count );
             for (int x = 0; x < count; x++)
             {
-                Buffer.AddItem(this.Amount[x]);
-                Buffer.AddItem(this.Capacity[x]);
-                Buffer.AddItem(this.PerSecond[x]);
+                Buffer.AddInt32( ReadStyle.NonNeg, this.Amount[x] );
+                Buffer.AddInt32( ReadStyle.NonNeg, this.Capacity[x] );
+                Buffer.AddInt32( ReadStyle.Signed, this.PerSecond[x] );
             }
         }
 
@@ -67,27 +67,30 @@ namespace SKCivilianIndustry
         /// <remarks>
         /// Make sure that laoding order is the same as the saving order.</remarks>
         /// <param name="Buffer"></param>
-        public CivilianCargo(ArcenDeserializationBuffer Buffer)
+        public CivilianCargo( ArcenDeserializationBuffer Buffer )
         {
-            this.Version = Buffer.ReadInt32();
+            this.Version = Buffer.ReadInt32( ReadStyle.NonNeg );
             // Lists require a special touch to load.
             // We'll have saved the number of items stored up above to be used here to determine the number of items to load.
             // ADDITIONALLY we'll need to recreate our arrays beforehand, as loading does not call the Initialization function.
             // Can't add values to an array that doesn't exist, after all.
             // Its more important to be accurate than it is to be update safe here, so we'll always use our stored value to figure out the number of resources.
-            int savedCount = Buffer.ReadInt32();
+            int savedCount = Buffer.ReadInt32( ReadStyle.NonNeg );
             int resourceTypeCount = (int)CivilianResource.Length;
-            for (int x = 0; x < resourceTypeCount; x++)
+            for ( int x = 0; x < resourceTypeCount; x++ )
             {
-                if (x >= savedCount)
+                if ( x >= savedCount )
                 {
                     this.Amount[x] = 0;
                     this.Capacity[x] = 100;
                     this.PerSecond[x] = 0;
                 }
-                this.Amount[x] = Buffer.ReadInt32();
-                this.Capacity[x] = Buffer.ReadInt32();
-                this.PerSecond[x] = Buffer.ReadInt32();
+                else
+                {
+                    this.Amount[x] = Buffer.ReadInt32( ReadStyle.NonNeg );
+                    this.Capacity[x] = Buffer.ReadInt32( ReadStyle.NonNeg );
+                    this.PerSecond[x] = Buffer.ReadInt32( ReadStyle.Signed );
+                }
             }
         }
     }

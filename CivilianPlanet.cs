@@ -26,16 +26,16 @@ namespace SKCivilianIndustry
         /// </summary>
         public void SerializeTo(ArcenSerializationBuffer Buffer)
         {
-            Buffer.AddItem(1);
-            Buffer.AddItem((int)this.Resource);
+            Buffer.AddInt32( ReadStyle.NonNeg, this.Version );
+            Buffer.AddByte( ReadStyleByte.Normal, (byte)this.Resource );
         }
         /// <summary>
         /// Used to load data. Make sure the loading order is the same as the saving order.
         /// </summary>
         public CivilianPlanet(ArcenDeserializationBuffer Buffer)
         {
-            this.Version = Buffer.ReadInt32();
-            this.Resource = (CivilianResource)Buffer.ReadInt32();
+            this.Version = Buffer.ReadInt32( ReadStyle.NonNeg );
+            this.Resource = (CivilianResource)Buffer.ReadByte( ReadStyleByte.Normal );
         }
     }
 }
